@@ -1,4 +1,3 @@
-// import { OpenCC } from 'opencc';
 import * as OpenCC from 'opencc-js';
 
 export function Sleep(ms: number) {

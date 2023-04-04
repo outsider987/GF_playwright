@@ -2,4 +2,4 @@ export const config = {
     count: 1,
 };
 
-export const defaultCode = 'BCMTFS';
+export const defaultCode = 'BCMSITF';

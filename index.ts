@@ -12,9 +12,9 @@ async function run() {
     const { ACCOUNT, PASSWORD } = process.env;
 
     console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD}`);
-    const browser: Browser = await chromium.launch({ headless: false });
+    const browser: Browser = await chromium.launch({ headless: false, args: ['--lang=zh-CN'] });
 
-    const context = await browser.newContext();
+    const context = await browser.newContext({ locale: 'zh-CN' });
     const page: Page = await context.newPage();
     // Load cookies from file if it exists
     if (fs.existsSync('temp/cookies.json')) {
