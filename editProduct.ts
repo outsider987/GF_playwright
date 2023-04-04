@@ -104,77 +104,10 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
 
                 const needRunCode = defaultCodeSpilts.filter((item) => !codeArray.includes(item));
 
-                for (const code of needRunCode) {
-                    switch (code) {
-                        case 'T':
-                            await translateTitle(editPage);
-                            SKU += 'T';
-                            break;
-                        case 'C':
-                            await setConstant(editPage);
-                            SKU += 'C';
-                            break;
-                        case 'B':
-                            await setBarcode(editPage, context);
-                            SKU += 'B';
-                            break;
-                        case 'M':
-                            await setMoney(editPage);
-                            SKU += 'M';
-                            break;
-                        case 'F':
-                            SKU += 'F';
-                            await setNameTitle(editPage, SKU, config);
-                            break;
-                        case 'S':
-                            await setSizeAndTranslate(editPage);
-                            SKU += 'S';
-                            break;
-                        case 'I':
-                            await processImage(editPage);
-                            SKU += 'I';
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
             } else {
                 const needRunCode = defaultCode.split('');
-                for (const code of needRunCode) {
-                    switch (code) {
-                        case 'T':
-                            await translateTitle(editPage);
-                            SKU += 'T';
-                            break;
-                        case 'C':
-                            await setConstant(editPage);
-                            SKU += 'C';
-                            break;
-                        case 'B':
-                            await setBarcode(editPage, context);
-                            SKU += 'B';
-                            break;
-                        case 'M':
-                            await setMoney(editPage);
-                            SKU += 'M';
-                            break;
-                        case 'F':
-                            SKU += 'F';
-                            await setNameTitle(editPage, SKU, config);
-                            break;
-                        case 'S':
-                            await setSizeAndTranslate(editPage);
-                            SKU += 'S';
-                            break;
-                        case 'I':
-                            await processImage(editPage);
-                            SKU += 'I';
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
+                SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
             }
 
             console.log('start save');
@@ -389,4 +322,48 @@ async function processImage(editPage: Page) {
         await deleteBtns[index].click();
     }
     console.log('end process image');
+}
+async function startProcessCodeFlow(
+    needRunCode: string[],
+    editPage: Page,
+    context: BrowserContext,
+    SKU: string,
+    config: any,
+) {
+    for (const code of needRunCode) {
+        switch (code) {
+            case 'T':
+                await translateTitle(editPage);
+                SKU += 'T';
+                break;
+            case 'C':
+                await setConstant(editPage);
+                SKU += 'C';
+                break;
+            case 'B':
+                await setBarcode(editPage, context);
+                SKU += 'B';
+                break;
+            case 'M':
+                await setMoney(editPage);
+                SKU += 'M';
+                break;
+            case 'F':
+                SKU += 'F';
+                await setNameTitle(editPage, SKU, config);
+                break;
+            case 'S':
+                await setSizeAndTranslate(editPage);
+                SKU += 'S';
+                break;
+            case 'I':
+                await processImage(editPage);
+                SKU += 'I';
+                break;
+
+            default:
+                break;
+        }
+    }
+    return SKU;
 }
