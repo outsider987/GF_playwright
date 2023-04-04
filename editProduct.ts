@@ -178,6 +178,10 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
             }
 
             console.log('start save');
+            if (SKU === '') {
+                console.log('code no change, close edit page');
+                editPage.close();
+            }
             const saveElement = await editPage.$('[data-value="save-4"]');
             await saveElement?.click();
             await editPage.waitForSelector('#msgText');
