@@ -1,12 +1,16 @@
 import { chromium, Browser, Page } from 'playwright';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
+import { SelectAllEdit, startEditPage } from './editProduct';
+import { waitForSelectorWithRetry } from './utils/utils';
+import { handleGoToPage } from './utils/handler';
+import { config } from './config/base';
 const http = require('http');
 
 dotenv.config();
 async function run() {
-    const filePath = './temp/validate.png';
     const { ACCOUNT, PASSWORD } = process.env;
+
     console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD}`);
     const browser: Browser = await chromium.launch({ headless: false });
 
@@ -15,9 +19,10 @@ async function run() {
     // Load cookies from file if it exists
     if (fs.existsSync('temp/cookies.json')) {
         const cookies = JSON.parse(fs.readFileSync('temp/cookies.json', 'utf8'));
-        debugger;
+
         await context.addCookies(cookies);
-        await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
+        await handleGoToPage({ page, url: 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft' });
+        // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
     } else {
         await page.goto('https://www.dianxiaomi.com/index.htm');
 
@@ -93,7 +98,8 @@ async function run() {
 
         await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
     }
-
+    // await SelectAllEdit(page);
+    await startEditPage(page, context, config);
     await browser.close();
 }
 

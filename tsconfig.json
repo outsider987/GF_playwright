@@ -23,7 +23,8 @@
         "strict": false,
         "paths": {
             "~/*": ["*"] // resolve any `~/foo/bar` to `<baseUrl>/foo/bar`
-        }
+        },
+        "types": ["node"]
     },
     "include": ["src", "./src/index.d.ts"],
     "exclude": ["node_modules", "build"],
