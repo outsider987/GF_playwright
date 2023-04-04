@@ -90,10 +90,14 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
             let SKU = '';
 
             if (matches) {
-                const currentCode = matches[0];
+                let code = matches[0].replace(/【|】|\d/g, '');
 
-                let code = currentCode.replace(/【|】|\d/g, '');
                 code = code.replace(/[^BCMSITF]*/g, '');
+                // if we leak some code, we need to run F at final
+                if (code.length > 0) {
+                    const index = code.indexOf('F');
+                    index !== -1 && (code = code.slice(index));
+                }
                 SKU += code;
                 const codeArray = code.split('');
                 const defaultCodeSpilts = defaultCode.split('');
@@ -193,7 +197,7 @@ async function translateTitle(editPage: Page) {
     console.log('start translate title');
     const headerSelector = '#title';
     const titleElement = await editPage.waitForSelector(headerSelector);
-    const titleValue = (await titleElement?.inputValue()).replace(/【|】|\d/g, '');
+    const titleValue = (await titleElement?.inputValue()).replace(/【.*?】/g, '');
 
     const newTCValue = await convertToTraditionalChinese(titleValue);
     console.log('newTCValue:', newTCValue);
@@ -359,24 +363,26 @@ async function setSizeAndTranslate(editPage: Page) {
 async function processImage(editPage: Page) {
     console.log('start process image');
     const showMoreBtn = await editPage.$('#showMoreImg');
-    if (showMoreBtn) await showMoreBtn.click();
+    if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
     const checkBoxs = await editPage.$$('input[type="checkbox"][name="selectedImg"]');
     const imageDivElements = await editPage.$$('.imgDivIn');
     const deleteBtns = await editPage.$$('.attach-icons.pull-right.yiImg');
     const urls = [];
     for (const checkBox of checkBoxs) {
-        if (!(await checkBox.isChecked()) && (await checkBox.isVisible())) await checkBox.click();
+        // const checkBox = await image.$('input[type="checkbox"][name="selectedImg"]');
+        if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden()))
+            await checkBox.click();
     }
-    // for (const image of imageDivElements) {
-    //     const imageElement = await image.$('img');
-    //     const url = await imageElement.getAttribute('src');
-    //     if (url) urls.push(url);
-    // }
-    // const images = await Promise.all(urls.map((url) => loadImage(url)));
-    // const { removedIndices } = await removeSimilarImages(images);
+    for (const image of imageDivElements) {
+        const imageElement = await image.$('img');
+        const url = await imageElement.getAttribute('src');
+        if (url) urls.push(url);
+    }
+    const images = await Promise.all(urls.map((url) => loadImage(url)));
+    const { removedIndices } = await removeSimilarImages(images);
 
-    // for (const index of removedIndices) {
-    //     await deleteBtns[index].click();
-    // }
+    for (const index of removedIndices) {
+        await deleteBtns[index].click();
+    }
     console.log('end process image');
 }
