@@ -1,5 +1,5 @@
 export const config = {
-    count: 1,
+    count: 40,
 };
 
 export const defaultCode = 'BCMSITF';

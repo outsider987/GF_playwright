@@ -175,8 +175,8 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
 
             console.log('start save');
             const saveElement = await editPage.$('[data-value="save-4"]');
-            // await saveElement?.click();
-            // await editPage.waitForSelector('#msgText');
+            await saveElement?.click();
+            await editPage.waitForSelector('#msgText');
             console.log('end save');
             await editPage.close();
         }
@@ -358,23 +358,25 @@ async function setSizeAndTranslate(editPage: Page) {
 
 async function processImage(editPage: Page) {
     console.log('start process image');
+    const showMoreBtn = await editPage.$('#showMoreImg');
+    if (showMoreBtn) await showMoreBtn.click();
     const checkBoxs = await editPage.$$('input[type="checkbox"][name="selectedImg"]');
     const imageDivElements = await editPage.$$('.imgDivIn');
     const deleteBtns = await editPage.$$('.attach-icons.pull-right.yiImg');
     const urls = [];
     for (const checkBox of checkBoxs) {
-        if (!(await checkBox.isChecked())) await checkBox.click();
+        if (!(await checkBox.isChecked()) && (await checkBox.isVisible())) await checkBox.click();
     }
-    for (const image of imageDivElements) {
-        const imageElement = await image.$('img');
-        const url = await imageElement.getAttribute('src');
-        if (url) urls.push(url);
-    }
-    const images = await Promise.all(urls.map((url) => loadImage(url)));
-    const { removedIndices } = await removeSimilarImages(images);
+    // for (const image of imageDivElements) {
+    //     const imageElement = await image.$('img');
+    //     const url = await imageElement.getAttribute('src');
+    //     if (url) urls.push(url);
+    // }
+    // const images = await Promise.all(urls.map((url) => loadImage(url)));
+    // const { removedIndices } = await removeSimilarImages(images);
 
-    for (const index of removedIndices) {
-        await deleteBtns[index].click();
-    }
+    // for (const index of removedIndices) {
+    //     await deleteBtns[index].click();
+    // }
     console.log('end process image');
 }
