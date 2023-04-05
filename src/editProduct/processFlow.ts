@@ -164,7 +164,8 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                         await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
                         await Sleep(1000);
                         // await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
-
+                        const cookies = await barCodePage.context().cookies();
+                        fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {
                             const refreshElement = await barCodePage.$('#nc_1_refresh1');
                             if (refreshElement && (await refreshElement.isVisible())) {
@@ -234,8 +235,13 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
     let newSKU = '【';
     if (domainName === targetUrl.Alia) {
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
-        barcodeInputElementS[0];
-        newSKU += `sim${await barcodeInputElementS[0].innerText()}`;
+        for (const barcodeInput of barcodeInputElementS) {
+            const inputElement = await barcodeInput.$('input');
+            if (inputElement) {
+                newSKU += `sim${await inputElement.inputValue()}`;
+                break;
+            }
+        }
     } else {
         newSKU += SKU;
         // Get the current date

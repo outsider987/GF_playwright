@@ -1,4 +1,4 @@
-import { chromium, Browser, Page, firefox } from 'playwright';
+import { chromium, Browser, Page, firefox, webkit } from 'playwright';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { SelectAllEdit, startEditPage } from './editProduct';

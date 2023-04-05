@@ -1,6 +1,6 @@
 export const config = {
     count: 80,
-    saveMode: false,
+    saveMode: true,
 };
 
 export const targetUrl = {
