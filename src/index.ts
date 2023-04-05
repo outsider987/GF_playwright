@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from 'playwright';
+import { chromium, Browser, Page, firefox } from 'playwright';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { SelectAllEdit, startEditPage } from './editProduct';
@@ -12,9 +12,22 @@ async function run() {
     const { ACCOUNT, PASSWORD } = process.env;
 
     console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD}`);
-    const browser: Browser = await chromium.launch({ headless: false, args: ['--lang=zh-CN'] });
+    const browser: Browser = await firefox.launch({
+        headless: false,
+        args: ['-new-tab'],
+    });
 
-    const context = await browser.newContext({ locale: 'zh-CN' });
+    const context = await browser.newContext({
+        // Set a random user agent string with each request
+        // userAgent: await browser.userAgent(),
+        // Emulate mouse and keyboard inputs to mimic human behavior
+        viewport: { width: 1920, height: 1080 },
+        deviceScaleFactor: 1,
+        hasTouch: false,
+        isMobile: false,
+        // Disable request interception to prevent breaking websites that rely on CSP
+        bypassCSP: true,
+    });
     const page: Page = await context.newPage();
     // Load cookies from file if it exists
     if (fs.existsSync('temp/cookies.json')) {
