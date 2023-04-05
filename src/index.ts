@@ -32,8 +32,13 @@ async function run() {
     // Load cookies from file if it exists
     if (fs.existsSync('temp/cookies.json')) {
         const cookies = JSON.parse(fs.readFileSync('temp/cookies.json', 'utf8'));
+        if (fs.existsSync('temp/aliasCookies.json')) {
+            const aliasCookies = JSON.parse(fs.readFileSync('temp/aliasCookies.json', 'utf8'));
+            await context.addCookies(aliasCookies);
+        }
 
         await context.addCookies(cookies);
+
         await handleGoToPage({ page, url: 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft' });
         // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
     } else {

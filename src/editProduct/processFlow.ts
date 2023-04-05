@@ -5,6 +5,7 @@ import { loadImage, removeSimilarImages } from '../utils/image2';
 import { config as Config, defaultCode, targetUrl } from '../config/base';
 import moment from 'moment';
 import { getCurrentDoman } from './filterHandle';
+import * as fs from 'fs';
 
 export async function startProcessCodeFlow(
     needRunCode: string[],
@@ -129,6 +130,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
         // await context.waitForEvent('page');
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
+
         await handleGoToPage({ page: barCodePage, url: link });
 
         const url = await barCodePage.url();
@@ -183,6 +185,8 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     const inputElement = await barcodeInput.$('input');
                     if (inputElement) await inputElement.fill(barcodeAlia);
                 }
+                const cookies = await barCodePage.context().cookies();
+                fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
                 await barCodePage.close();
                 break;
             case targetUrl.socwung:
@@ -231,7 +235,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
     if (domainName === targetUrl.Alia) {
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         barcodeInputElementS[0];
-        newSKU += `sim${barcodeInputElementS[0]}`;
+        newSKU += `sim${await barcodeInputElementS[0].innerText()}`;
     } else {
         newSKU += SKU;
         // Get the current date
@@ -263,40 +267,48 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
 }
 
 export async function setSizeAndTranslate(editPage: Page) {
-    console.log('start translate title');
-    const headerSelector = '#cke_1_contents';
-    const contentElement = await editPage.waitForSelector(headerSelector);
-    const iframeElement = await contentElement.waitForSelector('iframe');
-    const iframe = await iframeElement.contentFrame();
-    const bodyElement = await iframe.$('body');
-    console.log(await bodyElement?.innerHTML());
-    const htmlString = await bodyElement?.innerHTML();
-    const newTCValue = await convertToTraditionalChinese(await bodyElement?.innerHTML());
-    let finalStr = '';
+    try {
+        console.log('start setSizeAndTranslate');
+        const sizeFrameSelector = '#cke_1_contents';
+        const contentElement = await editPage.waitForSelector(sizeFrameSelector);
+        const iframeElement = await contentElement.waitForSelector('iframe');
+        await iframeElement.waitForElementState('visible');
+        // await iframeElement.waitForLoadState('networkidle');
 
-    const traditionalRegex = /[\u4e00-\u9fff]+/g;
+        const iframe = await iframeElement.contentFrame();
+        const bodyElement = await iframe.$('body');
+        console.log(await bodyElement?.innerHTML());
+        const htmlString = await bodyElement?.innerHTML();
+        const newTCValue = await convertToTraditionalChinese(await bodyElement?.innerHTML());
+        let finalStr = '';
 
-    if (traditionalRegex.test(newTCValue)) {
-        // The text contains both Simplified and Traditional Chinese characters
-        // Remove the img tags and their contents
-        finalStr = newTCValue.replace(/<img[^>]*>/g, '');
-        // console.log(cleanedHtmlString);
-    } else finalStr = newTCValue;
-    // const newBodyElement = JSON.parse(newTCValue);
-    const result = `
-    <div style="text-align: center;">
-        <span>【尺 碼 信 息 x Size info】</span>
-    </div>
-    ${finalStr}
-    <div style="text-align: center;">
-        <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
-    </div>
- `;
+        const traditionalRegex = /[\u4e00-\u9fff]+/g;
 
-    await iframe.evaluate((html) => {
-        document.body.innerHTML = html;
-    }, result);
-    console.log('newTCValue:', result);
+        if (traditionalRegex.test(newTCValue)) {
+            // The text contains both Simplified and Traditional Chinese characters
+            // Remove the img tags and their contents
+            finalStr = newTCValue.replace(/<img[^>]*>/g, '');
+            // console.log(cleanedHtmlString);
+        } else finalStr = newTCValue;
+        // const newBodyElement = JSON.parse(newTCValue);
+        const result = `
+        <div style="text-align: center;">
+            <span>【尺 碼 信 息 x Size info】</span>
+        </div>
+        ${finalStr}
+        <div style="text-align: center;">
+            <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
+        </div>
+     `;
+
+        await iframe.evaluate((html: string) => {
+            document.body.innerHTML = html;
+        }, result);
+        console.log('newTCValue:', result);
+    } catch (error) {
+        console.log(`failed setSizeAndTranslate ${error}`);
+        setSizeAndTranslate(editPage);
+    }
 }
 
 export async function processImage(editPage: Page) {
