@@ -14,24 +14,3 @@ export async function convertToTraditionalChinese(simplifiedChinese: any) {
     const converter = OpenCC.Converter({ from: 'cn', to: 'hk' });
     return converter(simplifiedChinese);
 }
-
-export async function waitForSelectorWithRetry(
-    page: any,
-    selector: string,
-    timeout: number = 5000,
-    retryInterval: number = 1000,
-    maxRetries: number = 5,
-) {
-    let retryCount = 0;
-    while (retryCount < maxRetries) {
-        try {
-            await page.waitForSelector(selector, { timeout });
-            return;
-        } catch (err) {
-            retryCount++;
-            console.log(`Error: ${err.message}, retrying in ${retryInterval}ms...`);
-            await page.waitForTimeout(retryInterval);
-        }
-    }
-    throw new Error(`Could not find selector ${selector} after ${maxRetries} retries`);
-}

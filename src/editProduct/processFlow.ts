@@ -1,10 +1,10 @@
 import { Browser, BrowserContext, Page } from 'playwright';
 import { handleGoToPage } from '../utils/handler';
 import { Sleep, convertToTraditionalChinese } from '../utils/utils';
-import { loadImage, removeSimilarImages } from '../utils/image2';
-import { config as Config, defaultCode, targetUrl } from '../config/base';
+import { loadImage, removeSimilarImages, recognizeImage } from '../utils/image';
+import { AliaRoute, config as Config, defaultCode, sensitiveWord, targetUrl } from '../config/base';
 import moment from 'moment';
-import { getCurrentDoman } from './filterHandle';
+import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
 import * as fs from 'fs';
 
 export async function startProcessCodeFlow(
@@ -41,7 +41,7 @@ export async function startProcessCodeFlow(
                 SKU += 'S';
                 break;
             case 'I':
-                await processImage(editPage);
+                await removeDuplicateImageAndEnable(editPage);
                 SKU += 'I';
                 break;
 
@@ -105,7 +105,7 @@ export async function setConstant(editPage: Page) {
         if (inputElement) await inputElement.fill(defaultInventory);
     }
 
-    if (domainName === targetUrl.Alia) {
+    if (!AliaRoute.includes(domainName)) {
         for (const weight of weightInputElementS) {
             const inputElement = await weight.$('input');
             if (inputElement) await inputElement.fill(defaultWeight);
@@ -233,12 +233,12 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
     const domainName = await getCurrentDoman(editPage);
     let newValue = '';
     let newSKU = '【';
-    if (domainName === targetUrl.Alia) {
+    if (AliaRoute.includes(domainName)) {
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         for (const barcodeInput of barcodeInputElementS) {
             const inputElement = await barcodeInput.$('input');
             if (inputElement) {
-                newSKU += `sim${await inputElement.inputValue()}`;
+                newSKU += `${await inputElement.inputValue()}`;
                 break;
             }
         }
@@ -279,24 +279,21 @@ export async function setSizeAndTranslate(editPage: Page) {
         const contentElement = await editPage.waitForSelector(sizeFrameSelector);
         const iframeElement = await contentElement.waitForSelector('iframe');
         await iframeElement.waitForElementState('visible');
-        // await iframeElement.waitForLoadState('networkidle');
 
         const iframe = await iframeElement.contentFrame();
         const bodyElement = await iframe.$('body');
-        console.log(await bodyElement?.innerHTML());
-        const htmlString = await bodyElement?.innerHTML();
-        const newTCValue = await convertToTraditionalChinese(await bodyElement?.innerHTML());
+
+        const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
         let finalStr = '';
 
+        // trandition test
         const traditionalRegex = /[\u4e00-\u9fff]+/g;
+        const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
 
-        if (traditionalRegex.test(newTCValue)) {
-            // The text contains both Simplified and Traditional Chinese characters
-            // Remove the img tags and their contents
-            finalStr = newTCValue.replace(/<img[^>]*>/g, '');
-            // console.log(cleanedHtmlString);
-        } else finalStr = newTCValue;
-        // const newBodyElement = JSON.parse(newTCValue);
+        if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
+            finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
+        } else finalStr = newTCinnerHtmlStr;
+
         const result = `
         <div style="text-align: center;">
             <span>【尺 碼 信 息 x Size info】</span>
@@ -317,7 +314,7 @@ export async function setSizeAndTranslate(editPage: Page) {
     }
 }
 
-export async function processImage(editPage: Page) {
+export async function removeDuplicateImageAndEnable(editPage: Page) {
     console.log('start process image');
     const showMoreBtn = await editPage.$('#showMoreImg');
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
@@ -335,7 +332,7 @@ export async function processImage(editPage: Page) {
         const url = await imageElement.getAttribute('src');
         if (url) urls.push(url);
     }
-    const images = await Promise.all(urls.map((url) => loadImage(url)));
+    const images = await Promise.all(urls.map((url) => loadImage(url, 200)));
     const { removedIndices } = await removeSimilarImages(images);
 
     for (const index of removedIndices) {

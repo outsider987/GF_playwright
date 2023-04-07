@@ -1,4 +1,5 @@
 import { chromium, Browser, Page } from 'playwright';
+import { Sleep } from './utils';
 
 const RETRY_LIMIT = 3; // Maximum number of retries
 const RETRY_DELAY = 3000; // Delay between retries in milliseconds
@@ -28,3 +29,17 @@ export const handleGoToPage = async ({ page, url, retry = 0 }: ReRequestPageProp
 };
 
 export const reWaitSelector = async ({ page, selector, retry = 0 }: ReRequestPageProps) => {};
+
+export const handleClodeModal = async (page: Page) => {
+    const tBodySelector = '#shopifySysMsg';
+
+    await page.waitForSelector(tBodySelector);
+
+    await page.waitForLoadState('networkidle');
+    console.log('start close modal');
+    const closeBtn = await page.$(`.close`);
+
+    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
+    await Sleep(1000);
+    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
+};

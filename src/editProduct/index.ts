@@ -1,59 +1,20 @@
 import { Browser, BrowserContext, Page } from 'playwright';
-import { handleGoToPage } from '../utils/handler';
+import { handleClodeModal, handleGoToPage } from '../utils/handler';
 import { convertToTraditionalChinese, Sleep } from '../utils/utils';
 import moment from 'moment';
-import { config as Config, defaultCode } from '../config/base';
-import { loadImage, removeSimilarImages } from '../utils/image2';
+import { config as Config, defaultCode, mode } from '../config/base';
+import { loadImage, removeSimilarImages } from '../utils/image';
 import { startProcessCodeFlow } from './processFlow';
-
-export const SelectAllEdit = async (page: Page) => {
-    const selectAllSelector = '#selectAll';
-    const dropDownSelector = '#dropdownMenu2';
-    const batcListSelector = '#batchUl';
-
-    await page.waitForSelector(selectAllSelector);
-    await page.waitForSelector(dropDownSelector);
-
-    const selectAllElement = await page.$(selectAllSelector);
-    const dropDownElement = await page.$(dropDownSelector);
-
-    const closeBtn = await page.waitForSelector(`button[data-dismiss="modal"]`);
-    await closeBtn.click();
-    await Sleep(1000);
-    const closeBtn2 = await page.waitForSelector(`button[data-dismiss="modal"]`);
-    await closeBtn2.click();
-
-    await selectAllElement.click();
-    await dropDownElement.hover();
-    const ul = await page.$(batcListSelector);
-    const lis = await ul.$$('li');
-    await lis[1].click();
-
-    // const edit = await page.waitForSelector(`a[${'sxz'}="${'batchEdit'}"]`);
-    await Sleep(1000);
-    debugger;
-    // await edit.click();
-    debugger;
-};
-
+import { WordTokenizer } from 'natural';
+import { startSizeImageProcess } from './modeFunction/sizeImage';
+import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
+let currentEditIndex = 0;
 export async function startEditPage(page: Page, context: BrowserContext, config: typeof Config) {
     try {
         const tBodySelector = '#shopifySysMsg';
-
-        // editPage Select
         const headerSelector = '#title';
 
-        await page.waitForSelector(tBodySelector);
-
-        await page.waitForLoadState('networkidle');
-        console.log('start close modal');
-        const closeBtn = await page.$(`.close`);
-
-        if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
-        await Sleep(1000);
-        if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
-        // const closeBtn2 = await page.waitForSelector(`button[data-dismiss="modal"]`);
-        // await closeBtn2.click();
+        await handleClodeModal(page);
 
         const bodyElement = await page.$(tBodySelector);
 
@@ -64,8 +25,9 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
 
         console.log('start loop edit');
         for (const edit of edits) {
-            await edit.click();
-
+            const newEdit = edits[currentEditIndex];
+            await newEdit.click();
+            let SKU = '';
             const editPage = await context.waitForEvent('page');
             await editPage.waitForLoadState('networkidle');
             const skuInputElementS = await editPage.$$('[data-name="sku"]');
@@ -81,37 +43,47 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
             console.log('loaded edit page');
 
             await editPage.waitForSelector(headerSelector);
+            switch (config.mode) {
+                case mode.routine:
+                    const regex = /[BCMSITF]+/; // Matches any characters between 【 and 】
 
-            console.log('Input value:', inputValue);
+                    // check title is match 【】
+                    const matches = inputValue.match(regex);
+                    if (matches) {
+                        let code = matches[0].replace(/【|】|\d/g, '');
 
-            const regex = /[BCMSITF]+/; // Matches any characters between 【 and 】
+                        code = code.replace(/[^BCMSITF]*/g, '');
+                        // if we leak some code, we need to run F at final
+                        if (code.length > 0) {
+                            const index = code.indexOf('F');
+                            index !== -1 && (code = code.slice(index));
+                        }
+                        SKU += code;
+                        const codeArray = code.split('');
+                        const defaultCodeSpilts = defaultCode.split('');
 
-            // check title is match 【】
-            const matches = inputValue.match(regex);
-            let SKU = '';
+                        const needRunCode = defaultCodeSpilts.filter((item) => !codeArray.includes(item));
 
-            if (matches) {
-                let code = matches[0].replace(/【|】|\d/g, '');
+                        SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
+                    } else {
+                        const needRunCode = defaultCode.split('');
+                        SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
+                    }
 
-                code = code.replace(/[^BCMSITF]*/g, '');
-                // if we leak some code, we need to run F at final
-                if (code.length > 0) {
-                    const index = code.indexOf('F');
-                    index !== -1 && (code = code.slice(index));
-                }
-                SKU += code;
-                const codeArray = code.split('');
-                const defaultCodeSpilts = defaultCode.split('');
+                    break;
+                case mode.sizeImage:
+                    await startSizeImageProcess(editPage, context);
+                    break;
+                case mode.downloadImagePackage:
+                    await startDownloadImageProcess(editPage, context);
+                    break;
 
-                const needRunCode = defaultCodeSpilts.filter((item) => !codeArray.includes(item));
-
-                SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
-            } else {
-                const needRunCode = defaultCode.split('');
-                SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
+                default:
+                    break;
             }
+            currentEditIndex++;
 
-            if (config.saveMode) {
+            if (config.saveMode && mode.routine === config.mode) {
                 console.log('start save');
                 if (SKU === '') {
                     console.log('code no change, close edit page');
@@ -121,7 +93,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 console.log('end save');
-            } else debugger;
+            } else if (false) debugger;
 
             await editPage.close();
         }
