@@ -99,7 +99,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         }
         console.log('end loop edit');
     } catch (error) {
-        console.log(`failed on ${config.count}`);
+        console.log(`failed on \n count ${config.count} \n edit ${currentEditIndex}`);
         const editPage = await context.pages()[1];
         await editPage.close();
         await startEditPage(page, context, config);
