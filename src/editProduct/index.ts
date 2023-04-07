@@ -24,7 +24,10 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const edits = await bodyElement.$$('a:text("编辑")');
 
         console.log('start loop edit');
-        for (const edit of edits) {
+        for (const [index, edit] of edits.entries()) {
+            if (edits.length - 1 === currentEditIndex) {
+                page.close();
+            }
             const newEdit = edits[currentEditIndex];
             await newEdit.click();
             let SKU = '';
