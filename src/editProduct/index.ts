@@ -8,6 +8,7 @@ import { startProcessCodeFlow } from './processFlow';
 import { WordTokenizer } from 'natural';
 import { startSizeImageProcess } from './modeFunction/sizeImage';
 import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
+import { openOnlineProduct } from './filterHandle';
 let currentEditIndex = 0;
 export async function startEditPage(page: Page, context: BrowserContext, config: typeof Config) {
     try {
@@ -15,7 +16,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-
+        await openOnlineProduct(page, context);
         const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');
