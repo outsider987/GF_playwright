@@ -15,16 +15,8 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-        const collpaseElements = await page.$$('a.action_icon');
-        for (const [index, collpase] of collpaseElements.entries()) {
-            if ((await collpase.isVisible()) && index !== 0) {
-                await collpase.click();
-            }
-        }
-        const elementClick = await page.waitForSelector('div.myj_tree_node[title="20230407"]');
-        await elementClick.click();
 
-        const bodyElement = await page.$(tBodySelector);
+        const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');
         await bodyElement.waitForSelector('a:text("编辑")');
@@ -32,11 +24,12 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const edits = await bodyElement.$$('a:text("编辑")');
 
         console.log('start loop edit');
+
         for (const [index, edit] of edits.entries()) {
             if (edits.length - 1 === currentEditIndex) {
                 page.close();
             }
-            const newEdit = edits[currentEditIndex];
+            const newEdit = await edits[currentEditIndex];
             await newEdit.click();
             let SKU = '';
             const editPage = await context.waitForEvent('page');
@@ -104,13 +97,14 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 console.log('end save');
-            } else debugger;
+            } else if (false) debugger;
 
             await editPage.close();
         }
         console.log('end loop edit');
     } catch (error) {
-        console.log(`failed on \n count ${config.count} \n edit ${currentEditIndex}`);
+        console.log(`failed on \n count ${config.count} \n edit ${currentEditIndex} \n error: ${error} `);
+
         const editPage = await context.pages()[1];
         await editPage.close();
         await startEditPage(page, context, config);

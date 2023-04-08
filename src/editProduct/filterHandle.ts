@@ -1,8 +1,9 @@
-import { Page } from 'playwright';
+import { BrowserContext, Page } from 'playwright';
 import { exportPath, sensitiveWord } from '~/config/base';
 import { recognizeImage } from '~/utils/image';
 import fs from 'fs';
 import csv from 'csvtojson';
+import { Sleep } from '~/utils/utils';
 
 export const getCurrentDoman = async (editPage: Page) => {
     const linkInpuSelector = '#sourceUrl0';
@@ -118,4 +119,19 @@ const convertTotableHtml = async (input: string) => {
         console.error(error);
         return null;
     }
+};
+
+export const openOnlineProduct = async (page: Page, context: BrowserContext) => {
+    const collpaseElements = await page.$$('.outDiv.node_top');
+    for (const [index, collpase] of collpaseElements.entries()) {
+        const label = await (await collpase.$('div')).innerText();
+        const aTag = await collpase.$('a');
+        if (aTag && (await aTag.isVisible()) && label !== '所有分类') {
+            await aTag.click();
+        }
+    }
+    const elementClick = await page.$$('div.myj_tree_node[title="20230407"]');
+    await elementClick[1].click();
+    const response = await context.waitForEvent('response');
+    await Sleep(1000);
 };
