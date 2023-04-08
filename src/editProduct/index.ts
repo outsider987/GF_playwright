@@ -15,6 +15,14 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
+        const collpaseElements = await page.$$('a.action_icon');
+        for (const [index, collpase] of collpaseElements.entries()) {
+            if ((await collpase.isVisible()) && index !== 0) {
+                await collpase.click();
+            }
+        }
+        const elementClick = await page.waitForSelector('div.myj_tree_node[title="20230407"]');
+        await elementClick.click();
 
         const bodyElement = await page.$(tBodySelector);
 
@@ -93,7 +101,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 console.log('end save');
-            } else if (false) debugger;
+            } else debugger;
 
             await editPage.close();
         }

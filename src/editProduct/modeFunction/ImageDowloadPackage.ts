@@ -23,7 +23,7 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
         if (url) urls.push(url);
     }
     if (!fs.existsSync(targetPath)) {
-        fs.mkdirSync(targetPath);
+        fs.mkdirSync(targetPath, { recursive: true });
     }
 
     const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, targetPath));

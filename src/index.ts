@@ -2,7 +2,7 @@ import { chromium, Browser, Page, firefox, webkit } from 'playwright';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { startEditPage } from './editProduct';
-import { handleGoToPage } from './utils/handler';
+import { handleClodeModal, handleGoToPage } from './utils/handler';
 import { config } from './config/base';
 const http = require('http');
 
@@ -117,6 +117,7 @@ async function run() {
             await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         }
         // await SelectAllEdit(page);
+
         await startEditPage(page, context, config);
         await browser.close();
     } catch (error) {
