@@ -1,7 +1,7 @@
 import { BrowserContext, Page } from 'playwright';
-import { downloadImage, loadImage } from '~/utils/image';
+import { downloadImage, loadImage } from '~/crawler/utils/image';
 import * as fs from 'fs';
-import { exportPath } from '~/config/base';
+import { exportPath } from '~/crawler/config/base';
 import axios from 'axios';
 import { config } from 'process';
 

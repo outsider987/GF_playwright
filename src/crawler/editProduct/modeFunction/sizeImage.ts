@@ -1,5 +1,5 @@
 import { BrowserContext, Page } from 'playwright';
-import { convertToTraditionalChinese } from '~/utils/utils';
+import { convertToTraditionalChinese } from '~/crawler/utils/utils';
 import { saveSizeHtmlString } from '../filterHandle';
 
 export const startSizeImageProcess = async (editPage: Page, context: BrowserContext) => {

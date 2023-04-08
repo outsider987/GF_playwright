@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+:root {
+
+  --panel-width: "10rem"; /* #00e0f3 */
+  --menu-width: "2.5rem"; /* #00c4fd */
+}
+
+@layer components {
+  .content_container {
+    @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
+    @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-[calc(100vh-theme('spacing.4'))] lg:max-w-[70vw] lg:pt-[6vh];
+  }
+  .content_tags_container {
+    @apply m-auto sm:p-3 sm:pt-m-navbar-desktop-h;
+    @apply flex h-full w-full lg:ml-[9.09vw] lg:pt-20;
+  }
+  .content_editor_container{
+    @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
+    @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-screen lg:pt-0;
+  }
+  .slide_group {
+    input[type='range'] {
+      @apply relative  h-2  w-full appearance-none  pr-[-8px];
+      background: #5d5d5d;
+      border-radius: 5px;
+      background-image: linear-gradient(to right, #ff5c01, #ffd25f);
+      background-repeat: no-repeat;
+    }
+    input[type='range']::-webkit-slider-thumb {
+      @apply relative z-40 h-[20px] w-[20px]  appearance-none rounded-full bg-greyscale;
+      width: 26px;
+      height: 26px;
+      background: #181818;
+      border: 6px solid #ffd25f;
+    }
+  }
+}
+
+.navbar_mobile {
+  background: rgba(24, 24, 24, 0.2);
+  box-shadow: inset 0px 0.5px 0px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(54.3656px);
+}
+
+.modal-mount {
+  animation: mount 1s linear;
+}
+
+@keyframes mount {
+  0% {
+    opacity: 0;
+    // transform: translateY(50%);
+  }
+  100% {
+    opacity: 1;
+    // transform: translateY(0);
+  }
+}
+
+.modal-unmount {
+  animation: unmount 0.5s ease-in-out;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  margin: 0px 0px 5px 0;
+  background: transparent;
+  border-radius: 10px;
+  // padding-right: 6.61px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: padding-box;
+}
