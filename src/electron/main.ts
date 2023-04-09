@@ -1,6 +1,7 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import { chromium } from 'playwright';
+import { RegisterFrontendEvents } from './controller/global/global.controller';
 
 let mainWindow: Electron.BrowserWindow | null;
 
@@ -19,9 +20,11 @@ async function createWindow() {
         height: heighto,
         titleBarStyle: 'hidden',
         frame: false,
+        transparent: true,
         webPreferences: {
             nodeIntegration: true,
-            devTools: false,
+            // devTools: false,
+            contextIsolation: false,
         },
     });
 
@@ -31,6 +34,7 @@ async function createWindow() {
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
+    RegisterFrontendEvents(mainWindow);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -75,9 +79,18 @@ app.on('ready', createWindow);
 // Quit when all windows are closed, except on macOS.
 // There, it's common for applications and their menu bar
 // to stay active until the user quits explicitly with Cmd + Q.
+app.on('before-quit', () => {
+    try {
+        const window = BrowserWindow.getFocusedWindow();
+        window.close();
+    } catch (error) {
+        console.log(error);
+    }
+});
+
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') {
-        app.quit();
+        // app.quit();
     }
 });
 

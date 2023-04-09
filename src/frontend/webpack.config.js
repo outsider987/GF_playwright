@@ -66,11 +66,14 @@ module.exports = {
     alias: {
       '~': path.resolve(__dirname, 'src/'),
     },
-    // fallback: {
-    //         "fs": false,
-    //         "os": require.resolve("os-browserify/browser")
-    //     },
+    fallback: { 'path': require.resolve('path-browserify') },
+    extensions: ['.jsx', '.js', '.tsx', '.ts'],
   },
+  target: 'electron-renderer',
+  externals: {
+    fs: require("fs"),
+  },
+
   plugins: [
     new ForkTsCheckerWebpackPlugin(),
     new CleanWebpackPlugin({
@@ -98,14 +101,19 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, './dist'),
     },
+
     allowedHosts: 'all',
     compress: true,
     hot: true,
     historyApiFallback: { index: '/', disableDotRule: true },
     // static: path.join(__dirname, 'dist'),
-    open: true,
+    open: false,
     port: 8080,
     compress: true,
+  },
+  watchOptions: {
+    aggregateTimeout: 200,
+    poll: 1000,
   },
   optimization: {
     splitChunks: {
