@@ -22,5 +22,5 @@ export const defaultCode = 'BCMSITF';
 export const config = {
     count: 1,
     saveMode: true,
-    mode: mode.sizeImage,
+    mode: mode.routine,
 };

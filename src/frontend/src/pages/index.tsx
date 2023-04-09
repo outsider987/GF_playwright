@@ -6,31 +6,36 @@ import { RotateLeft, ArtTrack } from '@mui/icons-material';
 import clsx from 'clsx';
 import Header from '~/layouts/Header';
 const Main = () => {
-  const { pathname } = useLocation();
-  let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
-  contentContainer = pathname === '/canvas/image-editor' ? 'content_editor_container' : 'content_container';
-  const container = clsx('flex', 'flex-col', 'text-[20vw]', 'text-white');
-  const IconSize = '20vw';
-  const navigation = useNavigate;
+    const { pathname } = useLocation();
+    let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
+    contentContainer = pathname === '/canvas/image-editor' ? 'content_editor_container' : 'content_container';
+    const container = clsx('flex', 'flex-col', 'text-white');
+    const IconSize = '20vw';
+    const navigation = useNavigate;
 
-  return (
-    <>
-      <Header></Header>
-      <MainWrapper>
-        <NavBar></NavBar>
-        <div className={container}>
-          {useLocation().pathname !== '/' ? (
-            <Outlet />
-          ) : (
-            <>
-              <RotateLeft sx={{ fontSize: IconSize }}></RotateLeft>
-              <ArtTrack sx={{ fontSize: IconSize }}></ArtTrack>
-            </>
-          )}
-          {/* <Outlet /> */}
-        </div>
-      </MainWrapper>
-    </>
-  );
+    return (
+        <>
+            <Header></Header>
+            <MainWrapper>
+                <NavBar></NavBar>
+                <div className={container}>
+                    {useLocation().pathname !== '/' ? (
+                        <Outlet />
+                    ) : (
+                        <div className="flex flex-row space-x-3">
+                            <div className="text-col flex w-full flex-col justify-center ">
+                                <RotateLeft sx={{ fontSize: IconSize }}></RotateLeft>
+                            </div>
+                            <div className="text-col flex w-full flex-col justify-center ">
+                                <ArtTrack sx={{ fontSize: IconSize }}></ArtTrack>
+                                <span className=" text-xl">sizeImage</span>
+                            </div>
+                        </div>
+                    )}
+                    {/* <Outlet /> */}
+                </div>
+            </MainWrapper>
+        </>
+    );
 };
 export default Main;

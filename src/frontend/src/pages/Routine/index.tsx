@@ -7,11 +7,15 @@ import Radio from '~/components/Radio';
 
 const Routine = () => {
   const { pathname } = useLocation();
-
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // handle radio change event here
+  };
   return (
     <div className=" flex-1  align-bottom">
       <div>
-        <Radio label={undefined} name={undefined} value={undefined} checked={undefined} onChange={undefined}></Radio>
+        <Radio label="Option 1" name="options" value="option1" checked={true} onChange={handleRadioChange} />
+        <Radio label="Option 2" name="options" value="option2" checked={false} onChange={handleRadioChange} />
+        <Radio label="Option 3" name="options" value="option3" checked={false} onChange={handleRadioChange} />
       </div>
       <Button>Start</Button>
     </div>

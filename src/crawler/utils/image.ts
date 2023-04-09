@@ -65,7 +65,7 @@ export function loadImage(url: string, size: number): Promise<string> {
     // });
     return new Promise((resolve, reject) => {
         axios
-            .get(url, { responseType: 'arraybuffer', timeout: 30000, maxContentLength: 100 * 1024 * 1024 })
+            .get(url, { responseType: 'arraybuffer', timeout: 10000, maxContentLength: 2 * 1024 * 1024 })
             .then((res) => {
                 // const result = Buffer.from(res.data, 'binary')
                 resolve(res.data);

@@ -104,7 +104,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 console.log('end save');
             } else if (false) debugger;
 
-            await editPage.close();
+            // await editPage.close();
         }
         console.log('end loop edit');
     } catch (error) {

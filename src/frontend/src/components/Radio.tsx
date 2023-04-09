@@ -10,7 +10,7 @@ interface Props {
 }
 const Radio = ({ label, name, value, checked, onChange }) => {
   const inputClasses = clsx(
-    'form-radio absolute inset-0 rounded-full text-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
+    'form-radio absolute inset-0 z-10 rounded-full text-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2',
     {
       'ring-2 ring-offset-2 ring-orange-500': checked,
     },
