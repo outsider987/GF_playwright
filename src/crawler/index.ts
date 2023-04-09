@@ -39,7 +39,11 @@ async function run() {
 
             await context.addCookies(cookies);
 
-            await handleGoToPage({ page, url: 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft' });
+            await handleGoToPage({
+                page,
+                url: 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft',
+                isignoreLoaded: true,
+            });
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
             await page.goto('https://www.dianxiaomi.com/index.htm');

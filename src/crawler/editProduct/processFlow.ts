@@ -60,7 +60,7 @@ export async function translateTitle(editPage: Page) {
         const titleValue = (await titleElement?.inputValue()).replace(/【.*?】/g, '');
 
         const newTCValue = await convertToTraditionalChinese(titleValue);
-        console.log('newTCValue:', newTCValue);
+
         await titleElement.fill(newTCValue);
         console.log('end translate title');
 
@@ -121,7 +121,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
         const linkClickSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
         const linkInpuSelector = '#sourceUrl0';
         const barcodeLinkInput = await editPage.waitForSelector(linkInpuSelector);
-
+        await editPage.waitForSelector(linkClickSelector);
         const linkElement = await editPage.$(linkClickSelector);
         await linkElement.click();
         const barCodePage = await context.waitForEvent('page');
@@ -131,7 +131,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
 
-        await handleGoToPage({ page: barCodePage, url: link });
+        await handleGoToPage({ page: barCodePage, url: link, isignoreLoaded: true });
 
         const url = await barCodePage.url();
         const domain = new URL(url);

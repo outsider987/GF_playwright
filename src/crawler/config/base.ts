@@ -20,7 +20,7 @@ export const AliaRoute = [targetUrl.Alia, targetUrl.Alia2];
 export const defaultCode = 'BCMSITF';
 
 export const config = {
-    count: 80,
-    saveMode: false,
+    count: 1,
+    saveMode: true,
     mode: mode.routine,
 };

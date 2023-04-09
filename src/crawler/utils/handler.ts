@@ -9,18 +9,24 @@ interface ReRequestPageProps {
     page: Page;
     url: string;
     retry?: number;
+    isignoreLoaded: boolean;
     selector?: string;
 }
 
-export const handleGoToPage = async ({ page, url, retry = 0 }: ReRequestPageProps): Promise<Page> => {
+export const handleGoToPage = async ({
+    page,
+    url,
+    isignoreLoaded = false,
+    retry = 0,
+}: ReRequestPageProps): Promise<Page> => {
     try {
-        await page.goto(url, { timeout: TIMEOUT });
+        await page.goto(url, { timeout: TIMEOUT, waitUntil: isignoreLoaded ? 'domcontentloaded' : 'networkidle' });
         // Do something with the page content here
     } catch (error) {
         console.log(`Error: ${error.message}, retrying in ${RETRY_DELAY}ms...`);
 
         if (retry < RETRY_LIMIT) {
-            await handleGoToPage({ page, url, retry: retry + 1 });
+            await handleGoToPage({ page, url, isignoreLoaded, retry: retry + 1 });
             // await page.reload();
         } else throw new Error(`Failed to load page ${url} after ${retry} retries.`);
     }
@@ -35,7 +41,7 @@ export const handleClodeModal = async (page: Page) => {
 
     await page.waitForSelector(tBodySelector);
 
-    await page.waitForLoadState('networkidle');
+    // await page.waitForLoadState('networkidle');
     console.log('start close modal');
     const closeBtn = await page.$(`.close`);
 

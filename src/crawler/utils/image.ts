@@ -5,6 +5,7 @@ import Tesseract from 'node-tesseract-ocr';
 // const tesseract = require("node-tesseract-ocr")
 import sharp from 'sharp';
 import * as fs from 'fs';
+import { error } from 'console';
 // import cv from 'opencv4nodejs';
 
 interface ImageType {
@@ -14,32 +15,57 @@ interface ImageType {
     width?: number;
 }
 
-export function loadImage(url: string, size: number): Promise<ImageType> {
+export function loadImage(url: string, size: number): Promise<string> {
     return new Promise((resolve, reject) => {
-        htmlLoadImage(url)
-            .then((image) => {
-                const canvas = createCanvas(size, size); // create a new canvas object
-                const ctx = canvas.getContext('2d'); // get the 2D context of the canvas
-                canvas.width = image.width;
-                canvas.height = image.height;
+        axios
+            .head(url, { timeout: 150000 })
+            .then((res) => {
+                const contentLength = parseInt(res.headers['content-length'], 10);
 
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                const imageData = {
-                    url: url,
-                    data: data,
-                };
-                resolve(imageData);
+                const isTooLarge = contentLength > 10000000;
+                if (isTooLarge) resolve('large');
+                else
+                    axios
+                        .get(url, { responseType: 'arraybuffer', timeout: 150000, maxContentLength: 10 * 1024 * 1024 })
+                        .then((res) => {
+                            // const result = Buffer.from(res.data, 'binary')
+                            resolve(res.data);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            resolve('large');
+                            // reject(`Failed to load image: ${url}`);
+                        });
             })
-            .catch((err) => {
-                console.log(err);
+            .catch((error) => {
+                console.log(error);
+                resolve('large');
             });
-        reject(`Failed to load image: ${url}`);
+
+        // htmlLoadImage(url)
+        //     .then((image) => {
+        //         const canvas = createCanvas(size, size); // create a new canvas object
+        //         const ctx = canvas.getContext('2d'); // get the 2D context of the canvas
+        //         canvas.width = image.width;
+        //         canvas.height = image.height;
+
+        //         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        //         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        //         const imageData = {
+        //             url: url,
+        //             data: data,
+        //         };
+        //         resolve(imageData);
+        //     })
+        //     .catch((err) => {
+        //         console.log(err);
+        //         reject(`Failed to load image: ${url}`);
+        //     });
     });
 }
-function hashImage(image: ImageType): string {
+function hashImage(binaryData: any): string {
     const hash = crypto.createHash('sha1');
-    hash.update(image.data);
+    hash.update(binaryData);
     return hash.digest('hex');
 }
 export const downloadImage = (imageUrl: string, input: any, path: string) => {
@@ -57,8 +83,8 @@ export const downloadImage = (imageUrl: string, input: any, path: string) => {
     });
 };
 
-export async function removeSimilarImages(images: ImageType[]) {
-    const uniqueImages: ImageType[] = [];
+export async function removeSimilarImages(images: string[]) {
+    const uniqueImages: string[] = [];
     const removedIndices: number[] = [];
     const imageHashes = new Map<string, number>();
 

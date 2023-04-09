@@ -3,7 +3,6 @@ import { handleClodeModal, handleGoToPage } from '../utils/handler';
 import { convertToTraditionalChinese, Sleep } from '../utils/utils';
 import moment from 'moment';
 import { config as Config, defaultCode, mode } from '../config/base';
-import { loadImage, removeSimilarImages } from '../utils/image';
 import { startProcessCodeFlow } from './processFlow';
 import { WordTokenizer } from 'natural';
 import { startSizeImageProcess } from './modeFunction/sizeImage';
@@ -28,13 +27,14 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
 
         for (const [index, edit] of edits.entries()) {
             if (edits.length - 1 === currentEditIndex) {
-                page.close();
+                await page.close();
             }
             const newEdit = await edits[currentEditIndex];
             await newEdit.click();
             let SKU = '';
             const editPage = await context.waitForEvent('page');
-            await editPage.waitForLoadState('networkidle');
+            // await editPage.waitForLoadState('networkidle', { timeout: 40000 });
+            await editPage.waitForSelector('[data-name="sku"]');
             const skuInputElementS = await editPage.$$('[data-name="sku"]');
             let inputValue = '';
             for (const sku of skuInputElementS) {
@@ -60,15 +60,19 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                         code = code.replace(/[^BCMSITF]*/g, '');
                         // if we leak some code, we need to run F at final
                         if (code.length > 0) {
-                            const index = code.indexOf('F');
-                            index !== -1 && (code = code.slice(index));
+                            code.replace('F', '');
                         }
                         SKU += code;
                         const codeArray = code.split('');
                         const defaultCodeSpilts = defaultCode.split('');
 
                         const needRunCode = defaultCodeSpilts.filter((item) => !codeArray.includes(item));
+                        if (needRunCode.length === 0) {
+                            currentEditIndex++;
+                            await editPage.close();
 
+                            continue;
+                        }
                         SKU = await startProcessCodeFlow(needRunCode, editPage, context, SKU, config);
                     } else {
                         const needRunCode = defaultCode.split('');
