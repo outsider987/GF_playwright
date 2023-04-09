@@ -49,7 +49,9 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
 
     for (const [index, imageTagStr] of imgTagList.entries()) {
         if (indexs.removedIndices.includes(index)) {
-            result += `${imageTagStr}<br>${await convertTotableHtml(texts[index])}<br>`;
+            result += `${imageTagStr.replace(/src="\/\//g, 'src="https://')}<br>${await convertTotableHtml(
+                texts[index],
+            )}<br>`;
         }
     }
     if (!fs.existsSync(exportPath.sizeImage)) {

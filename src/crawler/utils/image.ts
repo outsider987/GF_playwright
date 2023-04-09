@@ -123,16 +123,21 @@ export async function removeSimilarImages(images: string[]) {
 }
 
 export async function recognizeImage(url: string): Promise<string> {
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
-    const preprocessedImage = await sharp(response.data).resize(1200).greyscale().normalize().sharpen().toBuffer();
+    try {
+        const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
+        const preprocessedImage = await sharp(response.data).resize(1200).greyscale().normalize().sharpen().toBuffer();
 
-    // Extract text using Tesseract.js with the chi_tra language data
-    const result = await Tesseract.recognize(preprocessedImage, {
-        lang: 'chi_tra',
-        psm: 6,
-        // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-    });
+        // Extract text using Tesseract.js with the chi_tra language data
+        const result = await Tesseract.recognize(preprocessedImage, {
+            lang: 'chi_tra',
+            psm: 6,
+            // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+        });
 
-    console.log(result);
-    return result;
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.log('failed image to text');
+        return '';
+    }
 }
