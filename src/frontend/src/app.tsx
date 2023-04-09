@@ -18,7 +18,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <HashRouter>
-        <ContextProvider>
+        <ContextProvider >
           <QueryClientProvider client={queryClient}>
             <ModalsWrapper>
               <MYRoutes />

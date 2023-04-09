@@ -1,5 +1,5 @@
 const { keyFrames, animates } = require('outsiderreact/dist/configs/tailwindAnimate');
-const { LAYOUT_SIZE } = require('./src/utils/canvas/constants');
+const { LAYOUT_SIZE } = require('./src/utils/constants');
 
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html', './node_modules/outsiderreact/dist/**/*.{ts,js}'],
@@ -15,14 +15,13 @@ module.exports = {
         slider_bar_r: '#FFD25F',
       },
       spacing: {
-        'navbar-desktop-w': '5rem',
-        'm-navbar-desktop-h': '8vh',
-        navbar_desktop_w: '15rem',
+
+        navbar_desktop_w: '20vw',
         'panel-width': LAYOUT_SIZE.PANEL_WIDTH,
         'menu-width': LAYOUT_SIZE.MENU_WIDTH,
       },
       maxWidth: {
-        navbar_desktop_w: '15rem',
+        navbar_desktop_w: '20vw',
       },
 
       fontFamily: {

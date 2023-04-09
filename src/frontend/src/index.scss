@@ -9,18 +9,23 @@
   --panel-width: "10rem"; /* #00e0f3 */
   --menu-width: "2.5rem"; /* #00c4fd */
 }
+#root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-app-region: drag;
+}
 
 @layer components {
   .content_container {
-    @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
-    @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-[calc(100vh-theme('spacing.4'))] lg:max-w-[70vw] lg:pt-[6vh];
+    // @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
+    // @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-[calc(100vh-theme('spacing.4'))] lg:max-w-[70vw] lg:pt-[6vh];
   }
   .content_tags_container {
-    @apply m-auto sm:p-3 sm:pt-m-navbar-desktop-h;
+    // @apply m-auto sm:p-3 sm:pt-m-navbar-desktop-h;
     @apply flex h-full w-full lg:ml-[9.09vw] lg:pt-20;
   }
   .content_editor_container{
-    @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
+    // @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
     @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-screen lg:pt-0;
   }
   .slide_group {

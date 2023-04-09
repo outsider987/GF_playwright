@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { initialGlobalState } from '~/utils/initializeState';
-import { useGlobalStorage } from '~/utils/storage';
+import { initialGlobalState } from '~/store/initialState';
+import { useGlobalStorage } from '~/store/storage';
 
 const useGlobalStateHook = () => {
   const [globalState, setGlobalState] = useState<typeof initialGlobalState>(initialGlobalState);

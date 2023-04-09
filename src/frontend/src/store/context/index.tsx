@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-import { initialGlobalState } from './initializeState';
+import { initialGlobalState } from '../initialState';
 import useGlobalStateHook from './hooks/useGlobalStateHook';
 
 const state = {

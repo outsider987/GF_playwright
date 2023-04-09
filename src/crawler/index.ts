@@ -122,6 +122,7 @@ async function run() {
         await browser.close();
     } catch (error) {
         console.log('run error', error);
+
         await run();
     }
 }
