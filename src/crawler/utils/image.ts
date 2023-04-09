@@ -65,7 +65,7 @@ export function loadImage(url: string, size: number): Promise<string> {
     // });
     return new Promise((resolve, reject) => {
         axios
-            .get(url, { responseType: 'arraybuffer', timeout: 10000, maxContentLength: 10 * 1024 * 1024 })
+            .get(url, { responseType: 'arraybuffer', timeout: 30000, maxContentLength: 100 * 1024 * 1024 })
             .then((res) => {
                 // const result = Buffer.from(res.data, 'binary')
                 resolve(res.data);
@@ -106,13 +106,10 @@ export async function removeSimilarImages(images: string[]) {
     for (let i = 0; i < images.length; i++) {
         const image = images[i];
         const hash = hashImage(image);
-        image === 'large' && removedIndices.push(i);
+        if (image === 'large') continue;
         if (imageHashes.has(hash)) {
             const similarIndex = imageHashes.get(hash);
-
-            if (!removedIndices.includes(similarIndex)) {
-                removedIndices.push(similarIndex);
-            }
+            removedIndices.push(i);
         } else {
             imageHashes.set(hash, i);
             uniqueImages.push(image);
