@@ -17,7 +17,14 @@ const HomeRoute = {
     {
       path: '/routine',
       element: lazyLoad(React.lazy(() => import('~/pages/Routine'))),
-      icon: 'template',
+      iconName: 'template',
+      isShow: true,
+      text: 'routine',
+    },
+    {
+      path: '/sizeImage',
+      element: lazyLoad(React.lazy(() => import('~/pages/SizeImage'))),
+      iconName: 'template',
       isShow: true,
       text: 'routine',
     },

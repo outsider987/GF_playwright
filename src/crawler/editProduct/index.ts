@@ -102,7 +102,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 console.log('end save');
-            } else debugger;
+            } else if (false) debugger;
 
             await editPage.close();
         }

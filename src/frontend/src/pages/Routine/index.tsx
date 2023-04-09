@@ -2,19 +2,19 @@ import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import HomeWrapper from '~/layouts/HomeWrapper';
 import NavBar from '../../layouts/NavBar';
+import Button from '~/components/Button';
+import Radio from '~/components/Radio';
 
-const Home = () => {
+const Routine = () => {
   const { pathname } = useLocation();
-  let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
-  contentContainer = pathname === '/canvas/image-editor' ? 'content_editor_container' : 'content_container';
+
   return (
-    <HomeWrapper>
-      <NavBar></NavBar>
-      <div className={contentContainer}>
-        {useLocation().pathname !== '/home' ? <Outlet /> : <Navigate to={'/profile'} />}
-        {/* <Outlet /> */}
+    <div className=" flex-1  align-bottom">
+      <div>
+        <Radio label={undefined} name={undefined} value={undefined} checked={undefined} onChange={undefined}></Radio>
       </div>
-    </HomeWrapper>
+      <Button>Start</Button>
+    </div>
   );
 };
-export default Home;
+export default Routine;

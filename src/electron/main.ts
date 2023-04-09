@@ -36,7 +36,7 @@ async function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-    const dragArea = document.getElementById('root');
+    const dragArea = document.getElementById('header');
 
     dragArea.addEventListener('mousedown', (event) => {
         if (event.button !== 0) {

@@ -16,51 +16,65 @@ interface ImageType {
 }
 
 export function loadImage(url: string, size: number): Promise<string> {
+    // return new Promise((resolve, reject) => {
+    //     axios
+    //         .head(url, { timeout: 100000 })
+    //         .then((res) => {
+    //             const contentLength = parseInt(res.headers['content-length'], 10);
+
+    //             const isTooLarge = contentLength > 10000000;
+    //             if (isTooLarge) resolve('large');
+    //             else
+    //                 axios
+    //                     .get(url, { responseType: 'arraybuffer', timeout: 100000, maxContentLength: 10 * 1024 * 1024 })
+    //                     .then((res) => {
+    //                         // const result = Buffer.from(res.data, 'binary')
+    //                         resolve(res.data);
+    //                     })
+    //                     .catch((err) => {
+    //                         console.log(err);
+    //                         resolve('large');
+    //                         // reject(`Failed to load image: ${url}`);
+    //                     });
+    //         })
+    //         .catch((error) => {
+    //             console.log(error);
+    //             resolve('large');
+    //         });
+
+    // htmlLoadImage(url)
+    //     .then((image) => {
+    //         const canvas = createCanvas(size, size); // create a new canvas object
+    //         const ctx = canvas.getContext('2d'); // get the 2D context of the canvas
+    //         canvas.width = image.width;
+    //         canvas.height = image.height;
+
+    //         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    //         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    //         const imageData = {
+    //             url: url,
+    //             data: data,
+    //         };
+    //         resolve(data as any);
+    //     })
+    //     .catch((err) => {
+    //         console.log(err);
+    //         resolve('large');
+    //         // reject(`Failed to load image: ${url}`);
+    //     });
+    // });
     return new Promise((resolve, reject) => {
         axios
-            .head(url, { timeout: 150000 })
+            .get(url, { responseType: 'arraybuffer', timeout: 10000, maxContentLength: 10 * 1024 * 1024 })
             .then((res) => {
-                const contentLength = parseInt(res.headers['content-length'], 10);
-
-                const isTooLarge = contentLength > 10000000;
-                if (isTooLarge) resolve('large');
-                else
-                    axios
-                        .get(url, { responseType: 'arraybuffer', timeout: 150000, maxContentLength: 10 * 1024 * 1024 })
-                        .then((res) => {
-                            // const result = Buffer.from(res.data, 'binary')
-                            resolve(res.data);
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                            resolve('large');
-                            // reject(`Failed to load image: ${url}`);
-                        });
+                // const result = Buffer.from(res.data, 'binary')
+                resolve(res.data);
             })
-            .catch((error) => {
-                console.log(error);
+            .catch((err) => {
+                console.log(err);
                 resolve('large');
+                // reject(`Failed to load image: ${url}`);
             });
-
-        // htmlLoadImage(url)
-        //     .then((image) => {
-        //         const canvas = createCanvas(size, size); // create a new canvas object
-        //         const ctx = canvas.getContext('2d'); // get the 2D context of the canvas
-        //         canvas.width = image.width;
-        //         canvas.height = image.height;
-
-        //         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        //         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        //         const imageData = {
-        //             url: url,
-        //             data: data,
-        //         };
-        //         resolve(imageData);
-        //     })
-        //     .catch((err) => {
-        //         console.log(err);
-        //         reject(`Failed to load image: ${url}`);
-        //     });
     });
 }
 function hashImage(binaryData: any): string {
@@ -84,6 +98,7 @@ export const downloadImage = (imageUrl: string, input: any, path: string) => {
 };
 
 export async function removeSimilarImages(images: string[]) {
+    console.log(' start removeSimilarImages');
     const uniqueImages: string[] = [];
     const removedIndices: number[] = [];
     const imageHashes = new Map<string, number>();
@@ -91,7 +106,7 @@ export async function removeSimilarImages(images: string[]) {
     for (let i = 0; i < images.length; i++) {
         const image = images[i];
         const hash = hashImage(image);
-
+        image === 'large' && removedIndices.push(i);
         if (imageHashes.has(hash)) {
             const similarIndex = imageHashes.get(hash);
 

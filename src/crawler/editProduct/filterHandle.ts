@@ -36,10 +36,13 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
     let result = '';
     const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>/g);
     const getImageSrcList = newTCinnerHtmlStr.match(/src="([^"]*)"[^>]*/g).map((str) => {
-        const tempStr = str.replace(/src="|"/g, '');
-        const regex = /(https?:\/\/[^\s]+)/g;
-        const urls = tempStr.match(regex);
-        return urls[0];
+        // const tempStr = str.replace(/src="|(\/\/)|"/g, '');
+        // const regex = /(https?:[^\s]+)/g;
+        // const urls = tempStr.match(regex);
+        // return 'https::'+urls[0];
+        const tempStr = str.replace(/src="|(\/\/)|"/g, '');
+        const urls = tempStr.split(' ');
+        return 'https://' + urls[0];
     });
     const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
     const indexs = getDuplicatedIndexs(texts);

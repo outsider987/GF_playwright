@@ -9,7 +9,7 @@
   --panel-width: "10rem"; /* #00e0f3 */
   --menu-width: "2.5rem"; /* #00c4fd */
 }
-#root {
+#header {
   -webkit-user-select: none;
   user-select: none;
   -webkit-app-region: drag;
@@ -18,7 +18,7 @@
 @layer components {
   .content_container {
     // @apply h-0 sm:min-h-[calc(100vh-theme('spacing.m-navbar-desktop-h'))] sm:pt-m-navbar-desktop-h;
-    // @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-[calc(100vh-theme('spacing.4'))] lg:max-w-[70vw] lg:pt-[6vh];
+    @apply mx-auto max-h-screen  w-full overflow-auto lg:min-h-[calc(100vh-theme('spacing.4'))] lg:max-w-[70vw] lg:pt-[6vh];
   }
   .content_tags_container {
     // @apply m-auto sm:p-3 sm:pt-m-navbar-desktop-h;
