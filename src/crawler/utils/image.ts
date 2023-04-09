@@ -16,7 +16,6 @@ interface ImageType {
 
 export function loadImage(url: string, size: number): Promise<ImageType> {
     return new Promise((resolve, reject) => {
-        // image.crossOrigin = 'anonymous';
         htmlLoadImage(url)
             .then((image) => {
                 const canvas = createCanvas(size, size); // create a new canvas object
@@ -33,8 +32,9 @@ export function loadImage(url: string, size: number): Promise<ImageType> {
                 resolve(imageData);
             })
             .catch((err) => {
-                reject(`Failed to load image: ${url}`);
+                console.log(err);
             });
+        reject(`Failed to load image: ${url}`);
     });
 }
 function hashImage(image: ImageType): string {

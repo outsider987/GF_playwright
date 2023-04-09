@@ -16,7 +16,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-        await openOnlineProduct(page, context);
+        // await openOnlineProduct(page, context);
         const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');
@@ -98,7 +98,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 console.log('end save');
-            } else if (false) debugger;
+            } else debugger;
 
             await editPage.close();
         }
