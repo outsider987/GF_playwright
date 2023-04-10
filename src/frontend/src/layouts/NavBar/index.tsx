@@ -6,7 +6,7 @@ import NavBarItem from '../NavBarItem';
 import clsx from 'clsx';
 
 const NavBar = () => {
-  const container = clsx('min-h-screen', 'w-full', 'bg-navbar', 'block', 'max-w-navbar_desktop_w');
+  const container = clsx('w-full', 'bg-navbar', 'block', 'max-w-navbar_desktop_w');
 
   return (
     <div className={container}>

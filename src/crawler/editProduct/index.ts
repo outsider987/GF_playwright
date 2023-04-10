@@ -15,7 +15,8 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-        await openOnlineProduct(page, context);
+        // await openOnlineProduct(page, context);
+
         const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');
@@ -82,10 +83,11 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                     break;
                 case mode.sizeImage:
                     await startSizeImageProcess(editPage, context);
-                    break;
+                    return;
+
                 case mode.downloadImagePackage:
                     await startDownloadImageProcess(editPage, context);
-                    break;
+                    return;
 
                 default:
                     break;
@@ -101,10 +103,9 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 const saveElement = await editPage.$('[data-value="save-4"]');
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
+                await editPage.close();
                 console.log('end save');
-            } else if (false) debugger;
-
-            // await editPage.close();
+            } else if (config.debuuger) debugger;
         }
         console.log('end loop edit');
     } catch (error) {

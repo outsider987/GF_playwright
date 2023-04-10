@@ -50,6 +50,7 @@ header,
 nav,
 section,
 video {
+  width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
@@ -74,7 +75,7 @@ main {
 body {
   line-height: 1;
   min-height: 100vh;
-  width: auto;
+  width: 100%;
 }
 
 ol,

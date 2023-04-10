@@ -93,9 +93,17 @@ export const downloadImage = (imageUrl: string, input: any, path: string, isResi
         let filename = `${input}.${extension}`;
         const targetPath = `${path}/${filename}`;
         response.data.pipe(
-            fs.createWriteStream(targetPath).on('finish', () => {
-                if (isResize) compressImage(targetPath, targetPath);
-            }),
+            fs
+                .createWriteStream(targetPath)
+                .on('finish', () => {
+                    if (isResize) compressImage(targetPath, targetPath);
+                })
+                .on('error', (err) => {
+                    fs.unlink(targetPath, (err) => {
+                        if (err) throw err;
+                        console.log('File deleted successfully!');
+                    });
+                }),
         );
         return { url: imageUrl, filename };
     });
@@ -145,8 +153,11 @@ export async function recognizeImage(url: string): Promise<string> {
 
 export async function compressImage(inputFilePath: string, outputFilePath: string): Promise<void> {
     const inputBuffer: Buffer = fs.readFileSync(inputFilePath);
-    await sharp(inputBuffer)
-        .resize({ width: 800 }) // resize to a maximum width of 800 pixels
-        .png({ quality: 70 }) // compress as JPEG with 70% quality
-        .toFile(outputFilePath);
+    const fileSizeInBytes = inputBuffer.length;
+    const fileSizeInKilobytes = fileSizeInBytes / 1024;
+    if (fileSizeInKilobytes > 300)
+        await sharp(inputBuffer)
+            .resize({ width: 800 }) // resize to a maximum width of 800 pixels
+            .png({ quality: 70 }) // compress as JPEG with 70% quality
+            .toFile(outputFilePath);
 }

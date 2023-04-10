@@ -17,12 +17,12 @@ const Header: React.FC<Props> = ({ children }) => {
 
   return (
     <div className=" relative flex h-[10vw] w-full items-center justify-center bg-orange-500 text-center text-4xl font-bold text-white">
-      <div id="header" className="flex w-full">
+      <div id="header" className="flex w-full justify-center text-center">
         Robot
       </div>
 
-      <div id="close" onClick={handleClose}>
-        <Close className="  "></Close>
+      <div id="close" className="flex w-[5vw]" onClick={handleClose}>
+        <Close></Close>
       </div>
     </div>
   );
