@@ -33,37 +33,42 @@ export const getDuplicatedIndexs = (texts: string[]) => {
 };
 
 export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: string) => {
-    let result = '';
-    const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>/g);
-    const getImageSrcList = newTCinnerHtmlStr.match(/src="([^"]*)"[^>]*/g).map((str) => {
-        if (str.match(/https:\/\//)) {
-            const tempStr = str.replace(/src="|"/g, '');
-            const regex = /(https?:[^\s]+)/g;
-            const urls = tempStr.match(regex);
-            return urls[0];
-        } else {
-            const tempStr = str.replace(/src="|(\/\/)|"/g, '');
-            const urls = tempStr.split(' ')[0];
+    try {
+        let result = '';
+        const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>/g);
+        const getImageSrcList = newTCinnerHtmlStr.match(/src="([^"]*)"[^>]*/g).map((str) => {
+            if (str.match(/https:\/\//)) {
+                const tempStr = str.replace(/src="|"/g, '');
+                const regex = /(https?:[^\s]+)/g;
+                const urls = tempStr.match(regex);
+                return urls[0];
+            } else {
+                const tempStr = str.replace(/src="|(\/\/)|"/g, '');
+                const urls = tempStr.split(' ')[0];
 
-            return 'https://' + urls[0];
+                return 'https://' + urls[0];
+            }
+        });
+        const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
+        const indexs = getDuplicatedIndexs(texts);
+
+        for (const [index, imageTagStr] of imgTagList.entries()) {
+            if (indexs.removedIndices.includes(index)) {
+                result += `${imageTagStr.replace(/src="\/\//g, 'src="https://')}<br>${await convertTotableHtml(
+                    texts[index],
+                )}<br>`;
+            }
         }
-    });
-    const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
-    const indexs = getDuplicatedIndexs(texts);
-
-    for (const [index, imageTagStr] of imgTagList.entries()) {
-        if (indexs.removedIndices.includes(index)) {
-            result += `${imageTagStr.replace(/src="\/\//g, 'src="https://')}<br>${await convertTotableHtml(
-                texts[index],
-            )}<br>`;
+        if (!fs.existsSync(exportPath.sizeImage)) {
+            fs.mkdirSync(exportPath.sizeImage);
         }
-    }
-    if (!fs.existsSync(exportPath.sizeImage)) {
-        fs.mkdirSync(exportPath.sizeImage);
-    }
 
-    fs.writeFileSync(`${exportPath.sizeImage}/${titleValue}.html`, result);
-    return result;
+        fs.writeFileSync(`${exportPath.sizeImage}/${titleValue}.html`, result);
+        return result;
+    } catch (error) {
+        console.log(error);
+        return '';
+    }
 };
 
 const convertTotableHtml = async (input: string) => {
