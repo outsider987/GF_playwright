@@ -26,7 +26,7 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
         fs.mkdirSync(targetPath, { recursive: true });
     }
 
-    const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, targetPath));
+    const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, targetPath, true));
 
     await Promise.all(downloadPromises)
         .then((results) => {
@@ -37,6 +37,6 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
             console.error('Error downloading images:', error);
         });
     // const images = await Promise.all(urls.map((url) => loadImage(url, 720)));
-
+    await editPage.close();
     console.log('end download image process');
 };

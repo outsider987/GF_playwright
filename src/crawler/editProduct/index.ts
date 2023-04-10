@@ -15,7 +15,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-        // await openOnlineProduct(page, context);
+        await openOnlineProduct(page, context);
         const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');

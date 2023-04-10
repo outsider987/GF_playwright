@@ -82,7 +82,7 @@ function hashImage(binaryData: any): string {
     hash.update(binaryData);
     return hash.digest('hex');
 }
-export const downloadImage = (imageUrl: string, input: any, path: string) => {
+export const downloadImage = (imageUrl: string, input: any, path: string, isResize: boolean) => {
     return axios({
         method: 'get',
         url: imageUrl,
@@ -91,8 +91,12 @@ export const downloadImage = (imageUrl: string, input: any, path: string) => {
         const contentType = response.headers['content-type'];
         const extension = contentType.split('/')[1];
         let filename = `${input}.${extension}`;
-
-        response.data.pipe(fs.createWriteStream(`${path}/${filename}`));
+        const targetPath = `${path}/${filename}`;
+        response.data.pipe(
+            fs.createWriteStream(targetPath).on('finish', () => {
+                if (isResize) compressImage(targetPath, targetPath);
+            }),
+        );
         return { url: imageUrl, filename };
     });
 };
@@ -137,4 +141,12 @@ export async function recognizeImage(url: string): Promise<string> {
         console.log('failed image to text');
         return '';
     }
+}
+
+export async function compressImage(inputFilePath: string, outputFilePath: string): Promise<void> {
+    const inputBuffer: Buffer = fs.readFileSync(inputFilePath);
+    await sharp(inputBuffer)
+        .resize({ width: 800 }) // resize to a maximum width of 800 pixels
+        .png({ quality: 70 }) // compress as JPEG with 70% quality
+        .toFile(outputFilePath);
 }
