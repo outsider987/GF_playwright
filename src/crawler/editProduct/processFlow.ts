@@ -105,12 +105,12 @@ export async function setConstant(editPage: Page) {
         if (inputElement) await inputElement.fill(defaultInventory);
     }
 
-    // if (!AliaRoute.includes(domainName)) {
-    for (const weight of weightInputElementS) {
-        const inputElement = await weight.$('input');
-        if (inputElement) await inputElement.fill(defaultWeight);
+    if (!AliaRoute.includes(domainName)) {
+        for (const weight of weightInputElementS) {
+            const inputElement = await weight.$('input');
+            if (inputElement) await inputElement.fill(defaultWeight);
+        }
     }
-    // }
 
     console.log('end set constant');
 }
@@ -142,7 +142,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     'div.offer-attr-item span.offer-attr-item-name:has-text("货号") + span.offer-attr-item-value';
                 const sliderSelector = '#nc_1_n1z';
 
-                await barCodePage.waitForLoadState('networkidle');
+                // await barCodePage.waitForLoadState('networkidle');
                 await barCodePage.$(sliderSelector);
                 const needDragSliderElement = await barCodePage.$(sliderSelector);
                 if (needDragSliderElement && (await needDragSliderElement.isVisible())) {
@@ -233,17 +233,16 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
     const domainName = await getCurrentDoman(editPage);
     let newValue = '';
     let newSKU = '【';
-    // if (AliaRoute.includes(domainName)) {
-    //     const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
-    //     for (const barcodeInput of barcodeInputElementS) {
-    //         const inputElement = await barcodeInput.$('input');
-    //         if (inputElement) {
-    //             newSKU += `${await inputElement.inputValue()}`;
-    //             break;
-    //         }
-    //     }
-    // } else
-    {
+    if (AliaRoute.includes(domainName)) {
+        const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
+        for (const barcodeInput of barcodeInputElementS) {
+            const inputElement = await barcodeInput.$('input');
+            if (inputElement) {
+                newSKU += `${await inputElement.inputValue()}`;
+                break;
+            }
+        }
+    } else {
         newSKU += SKU;
         // Get the current date
         const currentDate = moment();

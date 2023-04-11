@@ -16,53 +16,6 @@ interface ImageType {
 }
 
 export function loadImage(url: string, size: number): Promise<string> {
-    // return new Promise((resolve, reject) => {
-    //     axios
-    //         .head(url, { timeout: 100000 })
-    //         .then((res) => {
-    //             const contentLength = parseInt(res.headers['content-length'], 10);
-
-    //             const isTooLarge = contentLength > 10000000;
-    //             if (isTooLarge) resolve('large');
-    //             else
-    //                 axios
-    //                     .get(url, { responseType: 'arraybuffer', timeout: 100000, maxContentLength: 10 * 1024 * 1024 })
-    //                     .then((res) => {
-    //                         // const result = Buffer.from(res.data, 'binary')
-    //                         resolve(res.data);
-    //                     })
-    //                     .catch((err) => {
-    //                         console.log(err);
-    //                         resolve('large');
-    //                         // reject(`Failed to load image: ${url}`);
-    //                     });
-    //         })
-    //         .catch((error) => {
-    //             console.log(error);
-    //             resolve('large');
-    //         });
-
-    // htmlLoadImage(url)
-    //     .then((image) => {
-    //         const canvas = createCanvas(size, size); // create a new canvas object
-    //         const ctx = canvas.getContext('2d'); // get the 2D context of the canvas
-    //         canvas.width = image.width;
-    //         canvas.height = image.height;
-
-    //         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    //         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    //         const imageData = {
-    //             url: url,
-    //             data: data,
-    //         };
-    //         resolve(data as any);
-    //     })
-    //     .catch((err) => {
-    //         console.log(err);
-    //         resolve('large');
-    //         // reject(`Failed to load image: ${url}`);
-    //     });
-    // });
     return new Promise((resolve, reject) => {
         axios
             .get(url, { responseType: 'arraybuffer', timeout: 10000, maxContentLength: 2 * 1024 * 1024 })
@@ -140,12 +93,16 @@ export async function recognizeImage(url: string): Promise<string> {
         const result = await Tesseract.recognize(preprocessedImage, {
             lang: 'chi_tra',
             psm: 6,
+            // oem: 1,
+            // dpi: 150,
+
             // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
         });
 
         console.log(result);
         return result;
     } catch (error) {
+        console.log(error);
         console.log('failed image to text');
         return '';
     }

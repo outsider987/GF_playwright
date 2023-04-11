@@ -83,12 +83,14 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                     break;
                 case mode.sizeImage:
                     await startSizeImageProcess(editPage, context);
+                    currentEditIndex++;
                     await editPage.close();
                     continue;
                     break;
 
                 case mode.downloadImagePackage:
                     await startDownloadImageProcess(editPage, context);
+                    currentEditIndex++;
                     await editPage.close();
                     continue;
 
