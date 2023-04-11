@@ -22,6 +22,6 @@ export const defaultCode = 'BCMSITF';
 export const config = {
     count: 1,
     debuuger: true,
-    saveMode: true,
+    saveMode: false,
     mode: mode.routine,
 };

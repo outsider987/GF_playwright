@@ -4,10 +4,9 @@ import * as fs from 'fs';
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
 import { config } from './config/base';
-const http = require('http');
 
 dotenv.config();
-async function run() {
+export async function run() {
     try {
         const { ACCOUNT, PASSWORD } = process.env;
 
@@ -130,5 +129,3 @@ async function run() {
         await run();
     }
 }
-
-run();

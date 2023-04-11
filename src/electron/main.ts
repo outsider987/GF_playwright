@@ -1,15 +1,11 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import { chromium } from 'playwright';
-import { RegisterFrontendEvents } from './controller/global/global.controller';
+import { RegisterFrontendEvents } from './ipcMain';
 
 let mainWindow: Electron.BrowserWindow | null;
 
 async function createWindow() {
-    const browser = await chromium.launch();
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto('https://www.example.com');
     let display = screen.getPrimaryDisplay();
     let widtho = display.bounds.width * 0.2;
     let heighto = display.bounds.height * 0.8;
@@ -29,7 +25,7 @@ async function createWindow() {
     });
 
     // Load the Playwright page in the Electron window.
-    const url = page.url();
+
     mainWindow.loadURL('http://localhost:8080');
 
     // Open the DevTools.

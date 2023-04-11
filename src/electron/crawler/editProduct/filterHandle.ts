@@ -1,9 +1,9 @@
 import { BrowserContext, Page } from 'playwright';
-import { exportPath, sensitiveWord } from '~/crawler/config/base';
-import { recognizeImage } from '~/crawler/utils/image';
+import { exportPath, sensitiveWord } from '../config/base';
+import { recognizeImage } from '../utils/image';
 import fs from 'fs';
 import csv from 'csvtojson';
-import { Sleep } from '~/crawler/utils/utils';
+import { Sleep } from '../utils/utils';
 
 export const getCurrentDoman = async (editPage: Page) => {
     const linkInpuSelector = '#sourceUrl0';
