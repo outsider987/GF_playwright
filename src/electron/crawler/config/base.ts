@@ -18,11 +18,11 @@ export const sensitiveWord = '胸圍腰圍臀圍衣長褲長袖長肩寬身高�
 
 export const AliaRoute = [targetUrl.Alia, targetUrl.Alia2];
 
-export const defaultCode = 'BCMSITF';
+export const defaultCode = 'SBCMITF';
 
 export const config = {
     count: 1,
     debuuger: true,
     saveMode: false,
-    mode: mode.routine,
+    mode: mode.sizeImage,
 };

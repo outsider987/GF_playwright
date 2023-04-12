@@ -43,6 +43,7 @@ export const handleClodeModal = async (page: Page) => {
 
     // await page.waitForLoadState('networkidle');
     console.log('start close modal');
+    await Sleep(1000);
     const closeBtn = await page.$(`.close`);
 
     if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();

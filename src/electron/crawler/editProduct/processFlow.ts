@@ -37,7 +37,7 @@ export async function startProcessCodeFlow(
                 await setNameTitle(editPage, SKU, config);
                 break;
             case 'S':
-                await setSizeAndTranslate(editPage);
+                await setSizeAndTranslate(editPage, context);
                 SKU += 'S';
                 break;
             case 'I':
@@ -142,7 +142,8 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     'div.offer-attr-item span.offer-attr-item-name:has-text("货号") + span.offer-attr-item-value';
                 const sliderSelector = '#nc_1_n1z';
 
-                await barCodePage.waitForLoadState('networkidle');
+                await Sleep(2000);
+                // await barCodePage.waitForLoadState('networkidle');
                 await barCodePage.$(sliderSelector);
                 const needDragSliderElement = await barCodePage.$(sliderSelector);
                 if (needDragSliderElement && (await needDragSliderElement.isVisible())) {
@@ -162,19 +163,15 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                         const sliderX = sliderBoundingBox.x + sliderBoundingBox.width / 2;
                         const sliderHandle = await barCodePage.locator(sliderSelector).first();
                         // needDragSliderElement.
-                        // await needDragSliderElement.hover();
-                        // await needDragSliderElement.dispatchEvent('mousedown', { button: 'left' });
-                        // await needDragSliderElement.dispatchEvent('mousemove', {
-                        //     button: 'left',
-                        //     targetPosition: { x: sliderX, y: 0 },
-                        // });
+                        await needDragSliderElement.hover();
+                        await needDragSliderElement.dispatchEvent('mousedown', { button: 'left' });
                         await Sleep(1000);
                         await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
-                        await Sleep(1000);
+                        await Sleep(3000);
 
-                        await barCodePage.waitForLoadState('networkidle');
                         const cookies = await barCodePage.context().cookies();
                         fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
+
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {
                             const refreshElement = await barCodePage.$('#nc_1_refresh1');
                             if (refreshElement && (await refreshElement.isVisible())) {
@@ -183,10 +180,10 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                             }
                         } else {
                             ispass = true;
-                            const aliasCookies = JSON.parse(
-                                fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'),
-                            );
-                            await context.addCookies(aliasCookies);
+                            // const aliasCookies = JSON.parse(
+                            //     fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'),
+                            // );
+                            // await context.addCookies(aliasCookies);
                             // await browser.close();
                             throw 'failer get barcode';
                         }
@@ -204,7 +201,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     if (inputElement) await inputElement.fill(barcodeAlia);
                 }
                 const cookies = await barCodePage.context().cookies();
-                // fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
+                // fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
                 await barCodePage.close();
                 break;
             case targetUrl.socwung:
@@ -289,15 +286,17 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
     config.count++;
 }
 
-export async function setSizeAndTranslate(editPage: Page) {
+export async function setSizeAndTranslate(editPage: Page, context: BrowserContext) {
     try {
         console.log('start setSizeAndTranslate');
         const sizeFrameSelector = '#cke_1_contents';
         const contentElement = await editPage.waitForSelector(sizeFrameSelector);
+
         const iframeElement = await contentElement.waitForSelector('iframe');
         await iframeElement.waitForElementState('visible');
 
         const iframe = await iframeElement.contentFrame();
+        await iframe.waitForLoadState('domcontentloaded');
         const bodyElement = await iframe.$('body');
 
         const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
@@ -327,7 +326,7 @@ export async function setSizeAndTranslate(editPage: Page) {
         console.log('newTCValue:', result);
     } catch (error) {
         console.log(`failed setSizeAndTranslate ${error}`);
-        setSizeAndTranslate(editPage);
+        setSizeAndTranslate(editPage, context);
     }
 }
 
@@ -339,15 +338,19 @@ export async function removeDuplicateImageAndEnable(editPage: Page) {
     const imageDivElements = await editPage.$$('.imgDivIn');
     const deleteBtns = await editPage.$$('.attach-icons.pull-right.yiImg');
     const urls = [];
+
     for (const checkBox of checkBoxs) {
         // const checkBox = await image.$('input[type="checkbox"][name="selectedImg"]');
-        if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden()))
+        if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden())) {
             await checkBox.click();
+        }
     }
     for (const image of imageDivElements) {
         const imageElement = await image.$('img');
-        const url = await imageElement.getAttribute('src');
-        if (url) urls.push(url);
+        if (imageElement) {
+            const url = await imageElement.getAttribute('src');
+            if (url) urls.push(url);
+        }
     }
     const images = await Promise.all(urls.map((url) => loadImage(url, 200)));
     const { removedIndices } = await removeSimilarImages(images);

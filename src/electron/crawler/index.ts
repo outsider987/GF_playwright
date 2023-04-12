@@ -11,7 +11,7 @@ export async function run() {
         const { ACCOUNT, PASSWORD } = process.env;
 
         console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD}`);
-        const browser: Browser = await chromium.launch({
+        const browser: Browser = await firefox.launch({
             headless: false,
             args: ['--disable-features=site-per-process'],
         });
@@ -116,7 +116,7 @@ export async function run() {
             page.waitForLoadState('networkidle');
 
             const cookies = await page.context().cookies();
-            if (!fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
+            if (!fs.existsSync(`${exportPath.cookies}`)) {
                 fs.mkdirSync(`${exportPath.cookies}`);
             }
             fs.writeFileSync(`${exportPath.cookies}/cookies.json`, JSON.stringify(cookies, null, 2));
@@ -134,4 +134,3 @@ export async function run() {
         await run();
     }
 }
-run();
