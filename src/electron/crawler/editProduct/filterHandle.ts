@@ -144,7 +144,7 @@ export const openOnlineProduct = async (page: Page, context: BrowserContext) => 
             await aTag.click();
         }
     }
-    const elementClick = await page.$$('div.myj_tree_node[title="20230410"]');
+    const elementClick = await page.$$('div.myj_tree_node[title="20230412"]');
     await elementClick[1].click();
     const response = await context.waitForEvent('response');
     await Sleep(1000);

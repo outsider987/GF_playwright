@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
-import { config } from './config/base';
+import { config, exportPath } from './config/base';
 
 dotenv.config();
 export async function run() {
@@ -29,14 +29,14 @@ export async function run() {
         });
         const page: Page = await context.newPage();
         // Load cookies from file if it exists
-        if (fs.existsSync('temp/cookies.json')) {
-            const cookies = JSON.parse(fs.readFileSync('temp/cookies.json', 'utf8'));
-            if (fs.existsSync('temp/aliasCookies.json')) {
-                const aliasCookies = JSON.parse(fs.readFileSync('temp/aliasCookies.json', 'utf8'));
-                await context.addCookies(aliasCookies);
-            }
+        if (fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
+            const cookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/cookies.json`, 'utf8'));
 
             await context.addCookies(cookies);
+            if (fs.existsSync(`${exportPath.cookies}/aliasCookies.json`)) {
+                const aliasCookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'));
+                await context.addCookies(aliasCookies);
+            }
 
             await handleGoToPage({
                 page,
@@ -113,9 +113,13 @@ export async function run() {
             console.log('start login');
             await loginBtnField?.click();
             await page.waitForNavigation();
+            page.waitForLoadState('networkidle');
 
             const cookies = await page.context().cookies();
-            fs.writeFileSync('temp/cookies.json', JSON.stringify(cookies, null, 2));
+            if (!fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
+                fs.mkdirSync(`${exportPath.cookies}`);
+            }
+            fs.writeFileSync(`${exportPath.cookies}/cookies.json`, JSON.stringify(cookies, null, 2));
 
             await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         }
@@ -123,9 +127,11 @@ export async function run() {
 
         await startEditPage(page, context, config);
         await browser.close();
+        console.log('end');
     } catch (error) {
         console.log('run error', error);
 
         await run();
     }
 }
+run();

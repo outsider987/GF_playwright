@@ -13,10 +13,6 @@ const NavBar = () => {
       <div className="absolute right-[-1px] w-[1px] bg-black/20" />
       {/* desktop */}
       <div className="px-[1.66vw] py-[37px]">
-        <div className="mb-[5vh]">
-          <SvgICon name="logo" />
-        </div>
-
         <div className="flex flex-col items-center space-y-6">
           {HomeRoute.children.map((item) => (
             <NavBarItem

@@ -37,6 +37,6 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
             console.error('Error downloading images:', error);
         });
     // const images = await Promise.all(urls.map((url) => loadImage(url, 720)));
-    await editPage.close();
+
     console.log('end download image process');
 };

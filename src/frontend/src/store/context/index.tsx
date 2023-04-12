@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 import { initialGlobalState } from '../initialState';
-import useGlobalStateHook from './hooks/useGlobalStateHook';
+import useGlobalStateHook from './hooks/global/useGlobalStateHook';
+import RoutineProvider from './hooks/routine/useRoutineStateHook';
 
 const state = {
   isShowPanel: false,
   setShowPanel: (value) => {},
-  mode: '' ,
+  mode: '',
   setMode: (value) => {},
   globalState: initialGlobalState,
   setGlobalState: (value: typeof initialGlobalState) => {},
@@ -21,7 +22,7 @@ const ContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <GlobalContext.Provider value={{ isShowPanel, setShowPanel, mode, setMode, globalState, setGlobalState }}>
-      {children}
+      <RoutineProvider>{children}</RoutineProvider>
     </GlobalContext.Provider>
   );
 };

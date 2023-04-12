@@ -27,7 +27,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
         console.log('start loop edit');
 
         for (const [index, edit] of edits.entries()) {
-            if (edits.length - 1 === currentEditIndex) {
+            if (edits.length === currentEditIndex) {
                 await page.close();
             }
             const newEdit = await edits[currentEditIndex];

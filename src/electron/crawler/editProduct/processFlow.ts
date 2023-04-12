@@ -1,8 +1,8 @@
-import { Browser, BrowserContext, Page } from 'playwright';
+import { Browser, BrowserContext, Page, firefox } from 'playwright';
 import { handleGoToPage } from '../utils/handler';
 import { Sleep, convertToTraditionalChinese } from '../utils/utils';
 import { loadImage, removeSimilarImages, recognizeImage } from '../utils/image';
-import { AliaRoute, config as Config, defaultCode, sensitiveWord, targetUrl } from '../config/base';
+import { AliaRoute, config as Config, defaultCode, exportPath, sensitiveWord, targetUrl } from '../config/base';
 import moment from 'moment';
 import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
 import * as fs from 'fs';
@@ -142,14 +142,22 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     'div.offer-attr-item span.offer-attr-item-name:has-text("货号") + span.offer-attr-item-value';
                 const sliderSelector = '#nc_1_n1z';
 
-                // await barCodePage.waitForLoadState('networkidle');
+                await barCodePage.waitForLoadState('networkidle');
                 await barCodePage.$(sliderSelector);
                 const needDragSliderElement = await barCodePage.$(sliderSelector);
                 if (needDragSliderElement && (await needDragSliderElement.isVisible())) {
                     let ispass = false;
                     while (!ispass) {
+                        // const browser: Browser = await firefox.launch({
+                        //     headless: false,
+                        //     // args: ['--disable-features=site-per-process'],
+                        // });
+                        // const context = await browser.newContext();
+                        // const fireFoxPage = await context.newPage();
+                        // await fireFoxPage.goto(link);
+
                         const sliderBoxSelectoe = '#nc_1__scale_text';
-                        const boxElement = await barCodePage.$(sliderBoxSelectoe);
+                        const boxElement = await barCodePage.waitForSelector(sliderBoxSelectoe);
                         const sliderBoundingBox = await boxElement.boundingBox();
                         const sliderX = sliderBoundingBox.x + sliderBoundingBox.width / 2;
                         const sliderHandle = await barCodePage.locator(sliderSelector).first();
@@ -163,16 +171,25 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                         await Sleep(1000);
                         await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
                         await Sleep(1000);
-                        // await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
+
+                        await barCodePage.waitForLoadState('networkidle');
                         const cookies = await barCodePage.context().cookies();
-                        fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
+                        fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {
                             const refreshElement = await barCodePage.$('#nc_1_refresh1');
                             if (refreshElement && (await refreshElement.isVisible())) {
                                 await refreshElement?.click();
                                 return;
                             }
-                        } else ispass = true;
+                        } else {
+                            ispass = true;
+                            const aliasCookies = JSON.parse(
+                                fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'),
+                            );
+                            await context.addCookies(aliasCookies);
+                            // await browser.close();
+                            throw 'failer get barcode';
+                        }
                     }
                 }
                 // await barCodePage.waitForLoadState('networkidle');
@@ -187,7 +204,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     if (inputElement) await inputElement.fill(barcodeAlia);
                 }
                 const cookies = await barCodePage.context().cookies();
-                fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
+                // fs.writeFileSync('temp/aliasCookies.json', JSON.stringify(cookies, null, 2));
                 await barCodePage.close();
                 break;
             case targetUrl.socwung:
@@ -206,7 +223,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
         }
         console.log('end set barcode');
     } catch (error) {
-        console.log('failed set barcode');
+        console.log(`set barcode error: ${error}`);
         const pages = await context.pages();
         await pages[pages.length - 1].close();
         await setBarcode(editPage, context);

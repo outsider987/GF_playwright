@@ -17,9 +17,10 @@ async function createWindow() {
         titleBarStyle: 'hidden',
         frame: false,
         transparent: true,
+        maximizable: false,
         webPreferences: {
             nodeIntegration: true,
-            // devTools: false,
+            devTools: true,
             contextIsolation: false,
         },
     });

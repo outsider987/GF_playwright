@@ -26,7 +26,7 @@ const HomeRoute = {
       element: lazyLoad(React.lazy(() => import('~/pages/SizeImage'))),
       iconName: 'template',
       isShow: true,
-      text: 'routine',
+      text: 'sizeImage',
     },
   ],
 };

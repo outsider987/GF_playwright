@@ -12,6 +12,7 @@ export const targetUrl = {
 export const exportPath = {
     sizeImage: 'temp/sizeImage',
     downloadImagePackage: 'temp/allImage',
+    cookies: 'temp/cookies',
 };
 export const sensitiveWord = '胸圍腰圍臀圍衣長褲長袖長肩寬身高體重';
 
