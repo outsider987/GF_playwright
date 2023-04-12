@@ -6,6 +6,7 @@ import Tesseract from 'node-tesseract-ocr';
 import sharp from 'sharp';
 import * as fs from 'fs';
 import { error } from 'console';
+import { convertToTraditionalChinese } from './utils';
 // import cv from 'opencv4nodejs';
 
 interface ImageType {
@@ -91,7 +92,7 @@ export async function recognizeImage(url: string): Promise<string> {
 
         // Extract text using Tesseract.js with the chi_tra language data
         const result = await Tesseract.recognize(preprocessedImage, {
-            lang: 'chi_tra',
+            lang: 'chi_sim',
             psm: 6,
             // oem: 1,
             // dpi: 150,
@@ -100,7 +101,7 @@ export async function recognizeImage(url: string): Promise<string> {
         });
 
         console.log(result);
-        return result;
+        return convertToTraditionalChinese(result);
     } catch (error) {
         console.log(error);
         console.log('failed image to text');

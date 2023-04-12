@@ -20,7 +20,7 @@ export async function run() {
             // Set a random user agent string with each request
             // userAgent: await browser.userAgent(),
             // Emulate mouse and keyboard inputs to mimic human behavior
-            viewport: { width: 1920, height: 1080 },
+            // viewport: { width: 1920, height: 1080 },
             deviceScaleFactor: 1,
             hasTouch: false,
             isMobile: false,
@@ -134,3 +134,4 @@ export async function run() {
         await run();
     }
 }
+run();

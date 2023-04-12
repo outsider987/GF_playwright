@@ -50,6 +50,7 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
             }
         });
         const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
+
         const indexs = getDuplicatedIndexs(texts);
 
         for (const [index, imageTagStr] of imgTagList.entries()) {
