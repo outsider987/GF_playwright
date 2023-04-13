@@ -1,22 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { initialFlowItems } from './initialState';
+import { initialRoutineState } from './initialState';
 
 const state = {
-  routineState: initialFlowItems,
-  setRoutineState: (value: typeof initialFlowItems) => {},
+  routineState: initialRoutineState,
+  setRoutineState: (value: typeof initialRoutineState) => {},
 };
 
 export const RoutineContext = createContext<typeof state>(state);
 
 const RoutineProvider = ({ children }) => {
-  const [routineState, setRoutineState] = useState<typeof initialFlowItems>(initialFlowItems);
+  const [routineState, setRoutineState] = useState<typeof initialRoutineState>(initialRoutineState);
 
-  const handleGolobalState = (value: typeof initialFlowItems) => {
-    setRoutineState(value);
-  };
-  useEffect(() => {
-    // setGlobalState(getGlobalStorage());
-  }, []);
   return <RoutineContext.Provider value={{ routineState, setRoutineState }}>{children}</RoutineContext.Provider>;
 };
 export const useRoutineContext = () => useContext(RoutineContext);

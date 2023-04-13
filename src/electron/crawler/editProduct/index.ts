@@ -2,7 +2,7 @@ import { Browser, BrowserContext, Page } from 'playwright';
 import { handleClodeModal, handleGoToPage } from '../utils/handler';
 import { convertToTraditionalChinese, Sleep } from '../utils/utils';
 import moment from 'moment';
-import { config as Config, defaultCode, mode } from '../config/base';
+import { globalConfig as Config, defaultCode, mode } from '../config/base';
 import { startProcessCodeFlow } from './processFlow';
 import { WordTokenizer } from 'natural';
 import { startSizeImageProcess } from './modeFunction/sizeImage';
@@ -110,7 +110,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await editPage.waitForSelector('#msgText');
                 await editPage.close();
                 console.log('end save');
-            } else if (config.debuuger) debugger;
+            } else if (config.debug) debugger;
         }
         console.log('end loop edit');
     } catch (error) {

@@ -11,7 +11,6 @@ const Main = () => {
   contentContainer = pathname === '/canvas/image-editor' ? 'content_editor_container' : 'content_container';
   const container = clsx('flex', 'flex-col', 'text-white');
   const IconSize = '20vw';
-  const navigation = useNavigate;
 
   return (
     <>

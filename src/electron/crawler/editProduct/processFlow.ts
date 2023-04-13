@@ -2,7 +2,7 @@ import { Browser, BrowserContext, Page, firefox } from 'playwright';
 import { handleGoToPage } from '../utils/handler';
 import { Sleep, convertToTraditionalChinese } from '../utils/utils';
 import { loadImage, removeSimilarImages, recognizeImage } from '../utils/image';
-import { AliaRoute, config as Config, defaultCode, exportPath, sensitiveWord, targetUrl } from '../config/base';
+import { AliaRoute, globalConfig as Config, defaultCode, exportPath, sensitiveWord, targetUrl } from '../config/base';
 import moment from 'moment';
 import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
 import * as fs from 'fs';

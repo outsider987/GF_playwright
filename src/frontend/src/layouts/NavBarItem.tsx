@@ -33,9 +33,7 @@ const NavBarItem: React.FC<Props> = ({ level = 0, children, iconName, path, isSh
             name={iconName}
             className={`relative flex justify-center ${isFocus ? 'text-white' : 'text-[#6A6A6A]'}`}
           >
-            {isFocus && (
-              <div className="absolute right-[-16.6%] top-[-20.83%] h-[22%] w-[22%] rounded-full bg-navBarUnFocusBlue" />
-            )}
+            {isFocus && <div className="absolute right-4 top-[-20.83%] h-2 w-2 rounded-full bg-navBarUnFocusBlue" />}
           </SvgICon>
           <span className="min-h-[18px] text-center text-2xl leading-[150%] tracking-[0.4px] text-white ">{text}</span>
         </Link>

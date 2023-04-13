@@ -93,7 +93,7 @@ export async function recognizeImage(url: string): Promise<string> {
         // Extract text using Tesseract.js with the chi_tra language data
         const result = await Tesseract.recognize(preprocessedImage, {
             lang: 'chi_sim',
-            psm: 6,
+            psm: 3,
             // oem: 1,
             // dpi: 150,
 

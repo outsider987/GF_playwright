@@ -3,14 +3,16 @@ import dotenv from 'dotenv';
 import * as fs from 'fs';
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
-import { config, exportPath } from './config/base';
+import { globalConfig, exportPath } from './config/base';
 
 dotenv.config();
-export async function run() {
+export async function run(mode: any) {
     try {
         const { ACCOUNT, PASSWORD } = process.env;
-
-        console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD}`);
+        globalConfig.mode = mode;
+        console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD} \n 
+        mode ${globalConfig.mode}
+        `);
         const browser: Browser = await firefox.launch({
             headless: false,
             args: ['--disable-features=site-per-process'],
@@ -125,13 +127,12 @@ export async function run() {
         }
         // await SelectAllEdit(page);
 
-        await startEditPage(page, context, config);
+        await startEditPage(page, context, globalConfig);
         await browser.close();
         console.log('end');
     } catch (error) {
         console.log('run error', error);
 
-        await run();
+        await run(mode);
     }
 }
-run();

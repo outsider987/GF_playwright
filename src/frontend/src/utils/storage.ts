@@ -1,6 +1,5 @@
 import { store } from '~/store';
 import { setToken } from '~/store/auth';
-import { initialGlobalState } from './context/hooks/global/initialState';
 
 export const setTokenStorage = (tokens: { accessToken: string; refreshToken: string }) => {
   localStorage.setItem('tokens', JSON.stringify(tokens));
@@ -18,23 +17,4 @@ export const getTokenStorage = () => {
 export const cleanTokenStorage = () => {
   localStorage.removeItem('tokens');
   store.dispatch(setToken({ accessToken: '', refreshToken: '', userInformation: null }));
-};
-
-export const useGlobalStorage = () => {
-  const key = 'global_state';
-  const setGlobalStorage = (dataObject: typeof initialGlobalState) => {
-    sessionStorage.setItem(key, JSON.stringify(dataObject));
-  };
-
-  const getGlobalStorage = () => {
-    const value = sessionStorage.getItem(key);
-    if (value == undefined) return null;
-    if (value) return JSON.parse(value) as typeof initialGlobalState;
-    return null;
-  };
-
-  const removeGlobalStorage = () => {
-    sessionStorage.removeItem(key);
-  };
-  return { setGlobalStorage, getGlobalStorage, removeGlobalStorage };
 };
