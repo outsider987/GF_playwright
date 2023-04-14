@@ -1,29 +1,28 @@
 import React, { useEffect } from 'react';
-import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import HomeWrapper from '~/layouts/HomeWrapper';
-import NavBar from '../../layouts/NavBar';
+import { useLocation } from 'react-router-dom';
 import Button from '~/components/Button';
-import { ipcRenderer } from 'electron';
 import CheckBox from '~/components/Input/CheckBox';
 import { useRoutineContext } from '~/store/context/hooks/routine/useRoutineStateHook';
-import { initialRoutineState } from '~/store/context/hooks/routine/initialState';
+
 import Filed from '~/components/Filed/Filed';
 import { useGlobalContext } from '~/store/context/hooks/global/useGlobalStateHook';
 import { useRoutineAPI } from '~/ipcRenderAPI/routine';
 import clsx from 'clsx';
-import Modal from '~/components/modals/Modal';
 import ConfirmCancelModal from '~/components/modals/ConfirmCancel';
+import { initialRoutineState } from '~/store/context/hooks/routine/initialState';
 
 const Routine = () => {
   const { pathname } = useLocation();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [countChecked, setCountChecked] = React.useState(true);
   const { routineState, setRoutineState } = useRoutineContext();
-  const { SEND_ROUTINE_START, INVOKE_GET_ROUTINE_STATE } = useRoutineAPI();
   const { globalState, setGlobalState } = useGlobalContext();
+  const { SEND_ROUTINE_START, INVOKE_GET_ROUTINE_STATE, SEND_ROUTINE_STOP } = useRoutineAPI();
+
   const handleStart = async (event) => {
-    debugger;
-    SEND_ROUTINE_START(routineState, globalState);
+    setIsModalOpen(false);
+    setGlobalState({ ...globalState, isRunning: true });
+    SEND_ROUTINE_START(routineState, { ...globalState, isRunning: true });
   };
   const handleChange = (e) => {
     const { checked, name } = e.target;
@@ -31,9 +30,12 @@ const Routine = () => {
     setRoutineState({ ...routineState, [name]: { ...routineState[name], enable: checked } });
   };
 
-  const subHandleChange = (parentName, type, e) => {
-    const { value, name, checked } = e.target;
+  const subHandleChange = (parentName, type, isTextnumber, e) => {
+    let { value, name, checked } = e.target;
 
+    if (isTextnumber) {
+      value = value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+    }
     setRoutineState({
       ...routineState,
       [parentName]: {
@@ -48,6 +50,9 @@ const Routine = () => {
   const handleCountChange = (e) => {
     setGlobalState({ ...globalState, count: e.target.value });
   };
+  const handleStop = () => {
+    SEND_ROUTINE_STOP();
+  };
 
   const filedCssClass = (isLine, type) => {
     const className = clsx(
@@ -57,21 +62,22 @@ const Routine = () => {
     );
     return className;
   };
+  const state = Object.values(initialRoutineState);
 
   useEffect(() => {
-    INVOKE_GET_ROUTINE_STATE().then((res) => {
-      console.log(res);
+    INVOKE_GET_ROUTINE_STATE(routineState).then((res) => {
+      setRoutineState({ ...routineState, ...res });
     });
   }, []);
 
   return (
     <div className=" flex-1 space-y-5 align-bottom text-2xl">
-      {Object.values(routineState).map((item, index) => {
+      {Object.values(routineState).map((item, index1) => {
         return (
           <>
             <div key={item.code} className="flex flex-row items-center justify-center space-x-3">
               <CheckBox checked={item.enable} onChange={handleChange} name={item.code}></CheckBox>
-              <span className="flex">{item.name}</span>
+              <span className="flex">{state[index1].name}</span>
             </div>
             <div className={`grid grid-cols-3 gap-4 ${item.enable ? '' : 'hidden'}`}>
               {item.children &&
@@ -80,10 +86,10 @@ const Routine = () => {
                     <div key={child.name} className={filedCssClass(child.isLine, child.type)}>
                       <span className="flex w-auto">{child.name}</span>
                       <Filed
-                        name={child.name}
+                        name={Object.values(state[index1].children)[index].name}
                         type={child.type as any}
                         value={child.value}
-                        onChange={(e) => subHandleChange(item.code, child.type, e)}
+                        onChange={(e) => subHandleChange(item.code, child.type, child.isTextNumer, e)}
                       ></Filed>
                     </div>
                   );
@@ -93,17 +99,23 @@ const Routine = () => {
         );
       })}
 
-      <Button
-        disabled={
-          !Object.values(routineState)
-            .map((item) => item.enable)
-            .includes(true)
-        }
-        onClick={() => setIsModalOpen(true)}
-        className="flex w-[20vw]"
-      >
-        start
-      </Button>
+      <div className="fle-row flex justify-around space-x-4">
+        <Button
+          disabled={
+            !Object.values(routineState)
+              .map((item) => item.enable)
+              .includes(true)
+          }
+          onClick={() => setIsModalOpen(true)}
+          className="flex w-[20vw]"
+        >
+          start
+        </Button>
+        {/* <Button className="flex w-[20vw]" onClick={handleStop}>
+          stop
+        </Button> */}
+      </div>
+
       <ConfirmCancelModal
         titile={'確認要啟動?'}
         backdrop={() => setIsModalOpen(false)}

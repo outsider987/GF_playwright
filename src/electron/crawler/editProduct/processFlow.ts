@@ -2,45 +2,63 @@ import { Browser, BrowserContext, Page, firefox } from 'playwright';
 import { handleGoToPage } from '../utils/handler';
 import { Sleep, convertToTraditionalChinese } from '../utils/utils';
 import { loadImage, removeSimilarImages, recognizeImage } from '../utils/image';
-import { AliaRoute, globalConfig as Config, defaultCode, exportPath, sensitiveWord, targetUrl } from '../config/base';
+import {
+    AliaRoute,
+    globalState,
+    defaultCode,
+    exportPath,
+    sensitiveWord,
+    targetUrl,
+    routineState,
+} from '../config/base';
 import moment from 'moment';
 import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
 import * as fs from 'fs';
+
+type configType = { globalState: typeof globalState; routineState: typeof routineState };
 
 export async function startProcessCodeFlow(
     needRunCode: string[],
     editPage: Page,
     context: BrowserContext,
     SKU: string,
-    config: any,
+    config: configType,
 ) {
+    console.log(`routineState ${JSON.stringify(config.routineState)}`);
     for (const code of needRunCode) {
         switch (code) {
             case 'T':
+                if (!config.routineState.T.enable) continue;
                 await translateTitle(editPage);
                 SKU += 'T';
                 break;
             case 'C':
-                await setConstant(editPage);
+                if (!config.routineState.C.enable) continue;
+                await setConstant(editPage, config);
                 SKU += 'C';
                 break;
             case 'B':
+                if (!config.routineState.B.enable) continue;
                 await setBarcode(editPage, context);
                 SKU += 'B';
                 break;
             case 'M':
-                await setMoney(editPage);
+                if (!config.routineState.M.enable) continue;
+                await setMoney(editPage, config);
                 SKU += 'M';
                 break;
             case 'F':
+                if (!config.routineState.F.enable) continue;
                 SKU += 'F';
                 await setNameTitle(editPage, SKU, config);
                 break;
             case 'S':
+                if (!config.routineState.S.enable) continue;
                 await setSizeAndTranslate(editPage, context);
                 SKU += 'S';
                 break;
             case 'I':
+                if (!config.routineState.I.enable) continue;
                 await removeDuplicateImageAndEnable(editPage);
                 SKU += 'I';
                 break;
@@ -54,7 +72,7 @@ export async function startProcessCodeFlow(
 
 export async function translateTitle(editPage: Page) {
     try {
-        console.log('start translate title');
+        console.log('［Ｔ］start translate title');
         const headerSelector = '#title';
         const titleElement = await editPage.waitForSelector(headerSelector);
         const titleValue = (await titleElement?.inputValue()).replace(/【.*?】/g, '');
@@ -83,11 +101,11 @@ export async function translateTitle(editPage: Page) {
     }
 }
 
-export async function setConstant(editPage: Page) {
-    console.log('start set constant');
-    const defaultMSRP = '3000';
-    const defaultInventory = '100';
-    const defaultWeight = '0.5';
+export async function setConstant(editPage: Page, config: configType) {
+    console.log('［Ｃ］start set constant');
+    const defaultMSRP = config.routineState.C.children.MSRP.value;
+    const defaultInventory = config.routineState.C.children.庫存.value;
+    const defaultWeight = config.routineState.C.children.重量.value;
 
     const domainName = await getCurrentDoman(editPage);
 
@@ -117,7 +135,7 @@ export async function setConstant(editPage: Page) {
 
 export async function setBarcode(editPage: Page, context: BrowserContext) {
     try {
-        console.log('start set barcode');
+        console.log('［Ｂ］start set barcode');
         const linkClickSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
         const linkInpuSelector = '#sourceUrl0';
         const barcodeLinkInput = await editPage.waitForSelector(linkInpuSelector);
@@ -227,22 +245,25 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
     }
 }
 
-export async function setMoney(editPage: Page) {
-    console.log('start set money');
-    const dollarRate = 33;
+export async function setMoney(editPage: Page, config: configType) {
+    console.log('［Ｍ］　start set money');
+
     const tBody = await editPage.waitForSelector('[data-name="price"]');
     const priceInputElementS = await editPage.$$('[data-name="price"]');
     // const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
 
+    const { 匯率, 另加, 運費 } = config.routineState.M.children;
+    const dollarRate = parseFloat(匯率.value);
     for (const price of priceInputElementS) {
         const inputElement = await price.$('input');
         const value = parseInt(await inputElement?.inputValue());
-        if (inputElement) await inputElement.fill(String((value + 3.5) * dollarRate * 2 + 100));
+        if (inputElement)
+            await inputElement.fill(String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)));
     }
 }
 
-export async function setNameTitle(editPage: Page, SKU: string, config: typeof Config) {
-    console.log('start name title');
+export async function setNameTitle(editPage: Page, SKU: string, config: configType) {
+    console.log('［Ｆ］ start name title');
     const skuInputElementS = await editPage.$$('[data-name="sku"]');
     const domainName = await getCurrentDoman(editPage);
     let newValue = '';
@@ -264,7 +285,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
         const currentWeek = Math.ceil(currentDate.date() / 7);
         newSKU += formattedMonth;
         newSKU += currentWeek;
-        const paddedNumber = config.count.toString().padStart(2, '0');
+        const paddedNumber = config.routineState.F.children.號碼.value.toString().padStart(2, '0');
         newSKU += paddedNumber;
     }
 
@@ -283,7 +304,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: typeof C
         const inputElement = await sku.$('input');
         if (inputElement) await inputElement.fill(newSKU.replace(/【|】/g, ''));
     }
-    config.count++;
+    config.routineState.F.children.號碼.value++;
 }
 
 export async function setSizeAndTranslate(editPage: Page, context: BrowserContext) {

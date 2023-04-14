@@ -20,14 +20,14 @@ export const AliaRoute = [targetUrl.Alia, targetUrl.Alia2];
 
 export const defaultCode = 'SBCMITF';
 
-export const globalConfig = {
+export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
     mode: mode.downloadImagePackage,
 };
 
-export const initialRoutineState = {
+export const routineState = {
     T: {
         code: 'T',
         name: '標題跟顏色 轉繁體',
@@ -43,21 +43,21 @@ export const initialRoutineState = {
                 name: 'MSRP',
                 isLine: false,
                 type: 'input',
-                value: '',
+                value: '3000',
                 isTextNumer: true,
             },
             庫存: {
                 name: '庫存',
                 isLine: false,
                 type: 'input',
-                value: '',
+                value: '100',
                 isTextNumer: true,
             },
             重量: {
                 name: '重量',
                 isLine: false,
                 type: 'input',
-                value: '',
+                value: '0.5',
                 isTextNumer: true,
             },
         },
@@ -65,21 +65,28 @@ export const initialRoutineState = {
 
     M: {
         code: 'M',
-        name: '金錢設定 (最近價錢 x 匯率 + 另加)',
+        name: '金錢設定 (最近價錢 + 運費) x 匯率 + 另加)',
         enable: true,
         children: {
+            運費: {
+                name: '運費',
+                isLine: false,
+                type: 'input',
+                value: '3.5',
+                isTextNumer: true,
+            },
             匯率: {
                 name: '匯率',
                 isLine: false,
                 type: 'input',
-                value: '',
+                value: '33',
                 isTextNumer: true,
             },
             另加: {
                 name: '另加',
                 isLine: false,
                 type: 'input',
-                value: '',
+                value: '100',
                 isTextNumer: true,
             },
         },
@@ -94,6 +101,14 @@ export const initialRoutineState = {
                 isLine: true,
                 type: 'checkbox',
                 value: true,
+                isTextNumer: false,
+            },
+            是否移除文字: {
+                name: '是否移除文字',
+                isLine: true,
+                type: 'checkbox',
+                value: true,
+                isTextNumer: false,
             },
             前墬: {
                 name: '前墬',
@@ -134,6 +149,7 @@ export const initialRoutineState = {
                 isLine: true,
                 type: 'checkbox',
                 value: true,
+                isTextNumer: false,
             },
             前墬: {
                 name: '前墬',
@@ -154,12 +170,13 @@ export const initialRoutineState = {
                 isLine: true,
                 type: 'checkbox',
                 value: true,
+                isTextNumer: false,
             },
             號碼: {
                 name: '號碼',
                 isLine: false,
                 type: 'input',
-                value: '1',
+                value: 1,
                 isTextNumer: false,
             },
         },

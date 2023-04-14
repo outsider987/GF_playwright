@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import MainWrapper from '~/layouts';
 import NavBar from '~/layouts/NavBar';
 import { RotateLeft, ArtTrack } from '@mui/icons-material';
 import clsx from 'clsx';
 import Header from '~/layouts/Header';
+import { useGlobalContext } from '~/store/context/hooks/global/useGlobalStateHook';
+import { routes } from '~/router';
 const Main = () => {
   const { pathname } = useLocation();
   let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
   contentContainer = pathname === '/canvas/image-editor' ? 'content_editor_container' : 'content_container';
   const container = clsx('flex', 'flex-col', 'text-white');
   const IconSize = '20vw';
+  const { globalState, setGlobalState } = useGlobalContext();
+  useEffect(() => {
+    console.log(pathname);
+    switch (pathname) {
+      case '/sizeImage':
+        setGlobalState({ ...globalState, mode: 'sizeImage', isRunning: false });
+        break;
+
+      case '/routine':
+        setGlobalState({ ...globalState, mode: 'routine', isRunning: false });
+        break;
+
+      default:
+        break;
+    }
+  }, [pathname]);
 
   return (
     <>

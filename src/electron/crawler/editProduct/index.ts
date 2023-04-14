@@ -2,14 +2,26 @@ import { Browser, BrowserContext, Page } from 'playwright';
 import { handleClodeModal, handleGoToPage } from '../utils/handler';
 import { convertToTraditionalChinese, Sleep } from '../utils/utils';
 import moment from 'moment';
-import { globalConfig as Config, defaultCode, mode } from '../config/base';
+import {
+    globalState as Config,
+    defaultCode,
+    routineState,
+    mode,
+    globalState as globalConfigType,
+} from '../config/base';
 import { startProcessCodeFlow } from './processFlow';
 import { WordTokenizer } from 'natural';
 import { startSizeImageProcess } from './modeFunction/sizeImage';
 import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
 import { openOnlineProduct } from './filterHandle';
+import * as fs from 'fs';
+import { configPath } from '../../config/bast';
 let currentEditIndex = 0;
-export async function startEditPage(page: Page, context: BrowserContext, config: typeof Config) {
+export async function startEditPage(
+    page: Page,
+    context: BrowserContext,
+    config: { globalState: typeof globalConfigType; routineState: typeof routineState },
+) {
     try {
         const tBodySelector = '#shopifySysMsg';
         const headerSelector = '#title';
@@ -49,7 +61,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
             console.log('loaded edit page');
 
             await editPage.waitForSelector(headerSelector);
-            switch (config.mode) {
+            switch (config.globalState.mode) {
                 case mode.routine:
                     const regex = /[BCMSITF]+/; // Matches any characters between 【 and 】
 
@@ -99,7 +111,7 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
             }
             currentEditIndex++;
 
-            if (config.saveMode && mode.routine === config.mode) {
+            if (config.globalState.saveMode && mode.routine === config.globalState.mode) {
                 console.log('start save');
                 if (SKU === '') {
                     console.log('code no change, close edit page');
@@ -110,11 +122,11 @@ export async function startEditPage(page: Page, context: BrowserContext, config:
                 await editPage.waitForSelector('#msgText');
                 await editPage.close();
                 console.log('end save');
-            } else if (config.debug) debugger;
+            } else if (config.globalState.debug) debugger;
         }
         console.log('end loop edit');
     } catch (error) {
-        console.log(`failed on \n count ${config.count} \n edit ${currentEditIndex} \n error: ${error} `);
+        console.log(`failed on \n count ${config.globalState.mode} \n edit ${currentEditIndex} \n error: ${error} `);
 
         const editPage = await context.pages()[1];
         await editPage.close();

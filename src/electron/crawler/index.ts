@@ -1,34 +1,49 @@
 import { chromium, Browser, Page, firefox, webkit } from 'playwright';
 import dotenv from 'dotenv';
-import * as fs from 'fs';
+
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
-import { globalConfig, exportPath } from './config/base';
+import { globalState as globalConfigType, exportPath, routineState as initialRoutineStateType } from './config/base';
+import * as fs from 'fs';
+import { configPath } from '../config/bast';
 
 dotenv.config();
-export async function run(mode: any) {
-    try {
-        const { ACCOUNT, PASSWORD } = process.env;
-        globalConfig.mode = mode;
-        console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD} \n 
-        mode ${globalConfig.mode}
-        `);
-        const browser: Browser = await firefox.launch({
-            headless: false,
-            args: ['--disable-features=site-per-process'],
-        });
+export async function run(
+    args: { routineState: typeof initialRoutineStateType; globalState: typeof globalConfigType },
+    abortSignal: any,
+) {
+    const { ACCOUNT, PASSWORD } = process.env;
+    const { routineState, globalState } = args;
+    console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD} \n 
+    mode ${globalState.mode}
+    `);
+    const browser: Browser = await firefox.launch({
+        headless: false,
+        args: ['--disable-features=site-per-process'],
+    });
 
-        const context = await browser.newContext({
-            // Set a random user agent string with each request
-            // userAgent: await browser.userAgent(),
-            // Emulate mouse and keyboard inputs to mimic human behavior
-            // viewport: { width: 1920, height: 1080 },
-            deviceScaleFactor: 1,
-            hasTouch: false,
-            isMobile: false,
-            // Disable request interception to prevent breaking websites that rely on CSP
-            bypassCSP: true,
-        });
+    const context = await browser.newContext({
+        // Set a random user agent string with each request
+        // userAgent: await browser.userAgent(),
+        // Emulate mouse and keyboard inputs to mimic human behavior
+        // viewport: { width: 1920, height: 1080 },
+        deviceScaleFactor: 1,
+        hasTouch: false,
+        isMobile: false,
+        // Disable request interception to prevent breaking websites that rely on CSP
+        bypassCSP: true,
+    });
+    try {
+        // abortSignal.onabort(() => {
+        //     browser.close();
+        //     return 'tesr';
+        // });
+        // new Promise((resolve, reject) => {
+        //     abortSignal.addEventListener('abort', () => {
+        //         reject(new DOMException('Aborted', 'AbortError'));
+        //     });
+        // });
+
         const page: Page = await context.newPage();
         // Load cookies from file if it exists
         if (fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
@@ -127,12 +142,13 @@ export async function run(mode: any) {
         }
         // await SelectAllEdit(page);
 
-        await startEditPage(page, context, globalConfig);
+        await startEditPage(page, context, { routineState, globalState });
         await browser.close();
         console.log('end');
     } catch (error) {
         console.log('run error', error);
-
-        await run(mode);
+        if (context.pages().length === 0) return;
+        error.isRunning ? browser.close() : await run(args, abortSignal);
     }
 }
+// run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');
