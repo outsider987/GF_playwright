@@ -85,14 +85,14 @@ export const initialRoutineState = {
         name: '前墬',
         isLine: false,
         type: 'input',
-        value: '',
+        value: '【尺 碼 信 息 x Size info】',
         isTextNumer: false,
       },
       後墬: {
         name: '後墬',
         isLine: false,
         type: 'input',
-        value: '',
+        value: '【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準',
         isTextNumer: false,
       },
     },
@@ -115,6 +115,13 @@ export const initialRoutineState = {
     name: '標題代碼命名',
     enable: true,
     children: {
+      使用機器人編號: {
+        name: '使用機器人編號',
+        isLine: true,
+        type: 'checkbox',
+        value: true,
+        isTextNumer: false,
+      },
       SKU取代標題: {
         name: 'SKU取代標題',
         isLine: true,

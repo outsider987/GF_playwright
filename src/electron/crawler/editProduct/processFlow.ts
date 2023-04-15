@@ -54,7 +54,7 @@ export async function startProcessCodeFlow(
                 break;
             case 'S':
                 if (!config.routineState.S.enable) continue;
-                await setSizeAndTranslate(editPage, context);
+                await setSizeAndTranslate(editPage, context, config);
                 SKU += 'S';
                 break;
             case 'I':
@@ -268,7 +268,11 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
     const domainName = await getCurrentDoman(editPage);
     let newValue = '';
     let newSKU = '【';
-    if (AliaRoute.includes(domainName)) {
+
+    const { children } = config.routineState.F;
+
+    newSKU += children.前墬.value;
+    if (children.SKU取代標題.value) {
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         for (const barcodeInput of barcodeInputElementS) {
             const inputElement = await barcodeInput.$('input');
@@ -277,7 +281,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
                 break;
             }
         }
-    } else {
+    } else if (children.使用機器人編號.value) {
         newSKU += SKU;
         // Get the current date
         const currentDate = moment();
@@ -288,7 +292,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
         const paddedNumber = config.routineState.F.children.號碼.value.toString().padStart(2, '0');
         newSKU += paddedNumber;
     }
-
+    newSKU += children.後墬.value;
     newSKU += '】';
 
     const headerSelector = '#title';
@@ -307,9 +311,9 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
     config.routineState.F.children.號碼.value++;
 }
 
-export async function setSizeAndTranslate(editPage: Page, context: BrowserContext) {
+export async function setSizeAndTranslate(editPage: Page, context: BrowserContext, config: configType) {
     try {
-        console.log('start setSizeAndTranslate');
+        console.log('［S］start setSizeAndTranslate');
         const sizeFrameSelector = '#cke_1_contents';
         const contentElement = await editPage.waitForSelector(sizeFrameSelector);
 
@@ -324,22 +328,46 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
         let finalStr = '';
 
         // trandition test
-        const traditionalRegex = /[\u4e00-\u9fff]+/g;
-        const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
+        //     const traditionalRegex = /[\u4e00-\u9fff]+/g;
+        //     const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
 
-        if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
+        //     if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
+        //         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
+        //     } else finalStr = newTCinnerHtmlStr;
+
+        //     const result = `
+        //     <div style="text-align: center;">
+        //         <span>【尺 碼 信 息 x Size info】</span>
+        //     </div>
+        //     ${finalStr}
+        //     <div style="text-align: center;">
+        //         <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
+        //     </div>
+        //  `;
+
+        const traditionalRegex = /[\u4e00-\u9fff]+/g;
+        const templateRegex = new RegExp(
+            `<div style="text-align: center;"><span>${config.routineState.S.children.前墬.value}<\/span><\/div>`,
+        );
+        const { children } = config.routineState.S;
+
+        if (
+            traditionalRegex.test(newTCinnerHtmlStr) &&
+            !templateRegex.test(newTCinnerHtmlStr) &&
+            children.是否移除圖片.value
+        ) {
             finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
-        } else finalStr = newTCinnerHtmlStr;
+        } else if (children.是否移除文字.value) finalStr = newTCinnerHtmlStr;
 
         const result = `
-        <div style="text-align: center;">
-            <span>【尺 碼 信 息 x Size info】</span>
-        </div>
-        ${finalStr}
-        <div style="text-align: center;">
-            <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
-        </div>
-     `;
+    <div style="text-align: center;">
+        <span>${config.routineState.S.children.前墬.value}</span>
+    </div>
+    ${finalStr}
+    <div style="text-align: center;">
+        <span>${config.routineState.S.children.後墬.value}</span>
+    </div>
+ `;
 
         await iframe.evaluate((html: string) => {
             document.body.innerHTML = html;
@@ -347,12 +375,12 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
         console.log('newTCValue:', result);
     } catch (error) {
         console.log(`failed setSizeAndTranslate ${error}`);
-        setSizeAndTranslate(editPage, context);
+        setSizeAndTranslate(editPage, context, config);
     }
 }
 
 export async function removeDuplicateImageAndEnable(editPage: Page) {
-    console.log('start process image');
+    console.log('［I］ start process image');
     const showMoreBtn = await editPage.$('#showMoreImg');
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
     const checkBoxs = await editPage.$$('input[type="checkbox"][name="selectedImg"]');
