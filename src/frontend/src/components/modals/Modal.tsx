@@ -10,7 +10,7 @@ const Modal: React.FC<ModalProps> = (props) => {
       <div
         {...props}
         onClick={props.backdrop}
-        className={`absolute inset-0 z-50
+        className={` fixed inset-0 z-50
         m-auto flex h-full animate-fade_in
         items-center
         justify-center
