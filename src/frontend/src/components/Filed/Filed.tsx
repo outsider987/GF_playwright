@@ -13,10 +13,6 @@ interface Props extends React.HTMLAttributes<HTMLElement> {
 }
 
 const Filed: React.FC<Props> = (props) => {
-  const { className } = props;
-  const whiteClass = clsx('bg-white', 'text-[#121212]', 'hover:bg-[#121212]', 'hover:text-white');
-  const darkClass = clsx('bg-[#121212]', 'text-white', 'hover:bg-white', 'hover:text-[#121212]');
-
   switch (props.type) {
     case 'input':
       return <Input name={props.name} value={props.value} onChange={props.onChange}></Input>;
@@ -24,7 +20,7 @@ const Filed: React.FC<Props> = (props) => {
       return <CheckBox name={props.name} onChange={props.onChange} checked={props.value}></CheckBox>;
 
     default:
-      return <div>1231</div>;
+      return <div></div>;
   }
 };
 

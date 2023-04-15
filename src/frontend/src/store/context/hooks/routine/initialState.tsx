@@ -126,7 +126,7 @@ export const initialRoutineState = {
         name: 'SKU取代標題',
         isLine: true,
         type: 'checkbox',
-        value: true,
+        value: false,
         isTextNumer: false,
       },
       前墬: {

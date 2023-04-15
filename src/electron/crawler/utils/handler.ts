@@ -50,3 +50,23 @@ export const handleClodeModal = async (page: Page) => {
     await Sleep(1000);
     if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
 };
+
+export const handleError = async (
+    fun: any,
+    param: {
+        code: any;
+        config: any;
+    },
+    tryErrorCount: any = 0,
+) => {
+    try {
+        console.log(`at ［${param.code}［ start`);
+        await fun();
+        console.log(`at ［${param.code}［ end`);
+    } catch (error) {
+        tryErrorCount++;
+        if (tryErrorCount === 5) throw ' failed on process flow';
+        await handleError(fun, param, tryErrorCount);
+        console.log(`at ［${param.code}］ failed with ${tryErrorCount}`);
+    }
+};

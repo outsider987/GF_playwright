@@ -32,6 +32,14 @@ const Routine = () => {
 
   const subHandleChange = (parentName, type, isTextnumber, e) => {
     let { value, name, checked } = e.target;
+    const additonal = {};
+
+    if (name === '使用機器人編號' && checked === true) {
+      additonal['SKU取代標題'] = { ...routineState[parentName].children['SKU取代標題'], value: false };
+    }
+    if (name === 'SKU取代標題' && checked === true) {
+      additonal['使用機器人編號'] = { ...routineState[parentName].children['使用機器人編號'], value: false };
+    }
 
     if (isTextnumber) {
       value = value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
@@ -43,6 +51,7 @@ const Routine = () => {
         children: {
           ...routineState[parentName].children,
           [name]: { ...routineState[parentName].children[name], value: type === 'checkbox' ? checked : value },
+          ...additonal,
         },
       },
     });
@@ -74,8 +83,8 @@ const Routine = () => {
     <div className=" flex-1 space-y-5 align-bottom text-2xl">
       {Object.values(routineState).map((item, index1) => {
         return (
-          <>
-            <div key={item.code} className="flex flex-row items-center justify-center space-x-3">
+          <div key={index1}>
+            <div className="flex flex-row items-center justify-center space-x-3">
               <CheckBox checked={item.enable} onChange={handleChange} name={item.code}></CheckBox>
               <span className="flex">{state[index1].name}</span>
             </div>
@@ -95,7 +104,7 @@ const Routine = () => {
                   );
                 })}
             </div>
-          </>
+          </div>
         );
       })}
 

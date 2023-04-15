@@ -27,7 +27,7 @@ export async function startEditPage(
         const headerSelector = '#title';
 
         await handleClodeModal(page);
-        await openOnlineProduct(page, context);
+        // await openOnlineProduct(page, context);
 
         const bodyElement = await page.waitForSelector(tBodySelector);
 
