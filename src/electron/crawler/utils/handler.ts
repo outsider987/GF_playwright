@@ -60,13 +60,13 @@ export const handleError = async (
     tryErrorCount: any = 0,
 ) => {
     try {
-        console.log(`at ［${param.code}［ start`);
+        console.log(`［${param.code}［ start`);
         await fun();
-        console.log(`at ［${param.code}［ end`);
+        console.log(`［${param.code}［ end`);
     } catch (error) {
         tryErrorCount++;
         if (tryErrorCount === 5) throw ' failed on process flow';
-        await handleError(fun, param, tryErrorCount);
         console.log(`at ［${param.code}］ failed with ${tryErrorCount}`);
+        await handleError(fun, param, tryErrorCount);
     }
 };

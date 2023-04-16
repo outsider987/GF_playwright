@@ -99,7 +99,6 @@ export async function translateTitle(editPage: Page) {
 }
 
 export async function setConstant(editPage: Page, config: configType) {
-    console.log('［Ｃ］start set constant');
     const defaultMSRP = config.routineState.C.children.MSRP.value;
     const defaultInventory = config.routineState.C.children.庫存.value;
     const defaultWeight = config.routineState.C.children.重量.value;
@@ -126,8 +125,6 @@ export async function setConstant(editPage: Page, config: configType) {
             if (inputElement) await inputElement.fill(defaultWeight);
         }
     }
-
-    console.log('end set constant');
 }
 
 export async function setBarcode(editPage: Page, context: BrowserContext) {
@@ -281,7 +278,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
         // Get the current date
     }
 
-    if (children.使用順序號) {
+    if (children.使用順序號.value) {
         const currentDate = moment();
         const formattedMonth = currentDate.format('MM');
         const currentWeek = Math.ceil(currentDate.date() / 7);
@@ -311,54 +308,52 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
 }
 
 export async function setSizeAndTranslate(editPage: Page, context: BrowserContext, config: configType) {
-    try {
-        console.log('［S］start setSizeAndTranslate');
-        const sizeFrameSelector = '#cke_1_contents';
-        const contentElement = await editPage.waitForSelector(sizeFrameSelector);
+    const sizeFrameSelector = '#cke_1_contents';
+    const contentElement = await editPage.waitForSelector(sizeFrameSelector);
 
-        const iframeElement = await contentElement.waitForSelector('iframe');
-        await iframeElement.waitForElementState('visible');
+    const iframeElement = await contentElement.waitForSelector('iframe');
+    await iframeElement.waitForElementState('visible');
 
-        const iframe = await iframeElement.contentFrame();
-        await iframe.waitForLoadState('domcontentloaded');
-        const bodyElement = await iframe.$('body');
+    const iframe = await iframeElement.contentFrame();
+    await iframe.waitForLoadState('domcontentloaded');
+    const bodyElement = await iframe.$('body');
 
-        const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
-        let finalStr = '';
+    const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
+    let finalStr = '';
 
-        // trandition test
-        //     const traditionalRegex = /[\u4e00-\u9fff]+/g;
-        //     const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
+    // trandition test
+    //     const traditionalRegex = /[\u4e00-\u9fff]+/g;
+    //     const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
 
-        //     if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
-        //         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
-        //     } else finalStr = newTCinnerHtmlStr;
+    //     if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
+    //         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
+    //     } else finalStr = newTCinnerHtmlStr;
 
-        //     const result = `
-        //     <div style="text-align: center;">
-        //         <span>【尺 碼 信 息 x Size info】</span>
-        //     </div>
-        //     ${finalStr}
-        //     <div style="text-align: center;">
-        //         <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
-        //     </div>
-        //  `;
+    //     const result = `
+    //     <div style="text-align: center;">
+    //         <span>【尺 碼 信 息 x Size info】</span>
+    //     </div>
+    //     ${finalStr}
+    //     <div style="text-align: center;">
+    //         <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
+    //     </div>
+    //  `;
 
-        const traditionalRegex = /[\u4e00-\u9fff]+/g;
-        const templateRegex = new RegExp(
-            `<div style="text-align: center;"><span>${config.routineState.S.children.前墬.value}<\/span><\/div>`,
-        );
-        const { children } = config.routineState.S;
+    const traditionalRegex = /[\u4e00-\u9fff]+/g;
+    const templateRegex = new RegExp(
+        `<div style="text-align: center;"><span>${config.routineState.S.children.前墬.value}<\/span><\/div>`,
+    );
+    const { children } = config.routineState.S;
 
-        if (
-            traditionalRegex.test(newTCinnerHtmlStr) &&
-            !templateRegex.test(newTCinnerHtmlStr) &&
-            children.是否移除圖片.value
-        ) {
-            finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
-        } else if (children.是否移除文字.value) finalStr = newTCinnerHtmlStr;
+    if (
+        traditionalRegex.test(newTCinnerHtmlStr) &&
+        !templateRegex.test(newTCinnerHtmlStr) &&
+        children.是否移除圖片.value
+    ) {
+        finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
+    } else if (children.是否移除文字.value) finalStr = newTCinnerHtmlStr;
 
-        const result = `
+    const result = `
     <div style="text-align: center;">
         <span>${config.routineState.S.children.前墬.value}</span>
     </div>
@@ -368,14 +363,10 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
     </div>
  `;
 
-        await iframe.evaluate((html: string) => {
-            document.body.innerHTML = html;
-        }, result);
-        console.log('newTCValue:', result);
-    } catch (error) {
-        console.log(`failed setSizeAndTranslate ${error}`);
-        setSizeAndTranslate(editPage, context, config);
-    }
+    await iframe.evaluate((html: string) => {
+        document.body.innerHTML = html;
+    }, result);
+    console.log('newTCValue:', result);
 }
 
 export async function removeDuplicateImageAndEnable(editPage: Page) {

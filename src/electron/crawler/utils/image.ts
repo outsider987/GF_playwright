@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { createCanvas, loadImage as htmlLoadImage } from 'canvas';
 import axios from 'axios';
 import Tesseract from 'node-tesseract-ocr';
 // const tesseract = require("node-tesseract-ocr")

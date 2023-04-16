@@ -27,7 +27,7 @@
         "types": ["node"]
     },
     "include": ["src", "./src/index.d.ts", "**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules", "build", "src/frontend"],
+    "exclude": ["node_modules", "build", "src/frontend", "app-win32-x64"],
     "ts-node": {
         // Do not forget to `npm i -D tsconfig-paths`
         "require": ["tsconfig-paths/register"]

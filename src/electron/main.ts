@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, crashReporter, screen } from 'electron';
 import * as path from 'path';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
@@ -18,10 +18,12 @@ async function createWindow() {
         frame: false,
         transparent: true,
         maximizable: false,
+
         webPreferences: {
             nodeIntegration: true,
-            devTools: true,
+            // devTools: true,
             contextIsolation: false,
+            sandbox: false,
         },
     });
 
@@ -37,37 +39,18 @@ async function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-    const dragArea = document.getElementById('header');
-
-    dragArea.addEventListener('mousedown', (event) => {
-        if (event.button !== 0) {
-            // Only allow dragging with the left mouse button
-            return;
-        }
-        // When the user clicks on the draggable area, start dragging the window
-        mainWindow.webContents.on('before-input-event', () => false);
-        mainWindow.setIgnoreMouseEvents(true, { forward: true });
-
-        const { screenX, screenY } = event;
-        const currentPosition = mainWindow.getPosition();
-        const offset = { x: screenX - currentPosition[0], y: screenY - currentPosition[1] };
-        const handleMouseMove = (event: { screenX: any; screenY: any }) => {
-            const { screenX, screenY } = event;
-            const x = screenX - offset.x;
-            const y = screenY - offset.y;
-            mainWindow.setPosition(x, y);
-        };
-        const handleMouseUp = () => {
-            mainWindow.webContents.removeListener('before-input-event', () => false);
-            mainWindow.setIgnoreMouseEvents(false);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    });
 }
-
+console.log(app.getPath('crashDumps'));
+crashReporter.start({ submitURL: '', uploadToServer: false });
+app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu-rasterization');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('--no-sandbox');
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.disableHardwareAcceleration();
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
