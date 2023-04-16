@@ -6,6 +6,8 @@ import { handleClodeModal, handleGoToPage } from './utils/handler';
 import { globalState as globalConfigType, exportPath, routineState as initialRoutineStateType } from './config/base';
 import * as fs from 'fs';
 import { configPath } from '../config/bast';
+import { app } from 'electron';
+import path from 'path';
 
 dotenv.config();
 export async function run(
@@ -85,13 +87,14 @@ export async function run(
             const loginBtnField = await page.$(loginBtn);
             const validateField = await page.$(validateSelector);
 
+            /*
             // Take a screenshot of the element
             console.log('start screenshot');
             const screenshotBuffer = await validateImgField.screenshot();
 
             // Save the screenshot to a file
             const filename = 'temp/screenshot.png';
-            require('fs').writeFileSync(filename, screenshotBuffer);
+            fs.writeFileSync(filename, screenshotBuffer);
 
             // Set the value of the input field
             await inputField.fill(ACCOUNT);
@@ -131,12 +134,17 @@ export async function run(
             await loginBtnField?.click();
             await page.waitForNavigation();
             page.waitForLoadState('networkidle');
+            */
+            await page.waitForNavigation();
+
+            const documentsPath = app.getPath('documents');
+            const cookiePath = path.join(documentsPath, exportPath.cookies);
 
             const cookies = await page.context().cookies();
-            if (!fs.existsSync(`${exportPath.cookies}`)) {
-                fs.mkdirSync(`${exportPath.cookies}`);
+            if (!fs.existsSync(`${cookiePath}`)) {
+                fs.mkdirSync(`${cookiePath}`);
             }
-            fs.writeFileSync(`${exportPath.cookies}/cookies.json`, JSON.stringify(cookies, null, 2));
+            fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
 
             await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         }

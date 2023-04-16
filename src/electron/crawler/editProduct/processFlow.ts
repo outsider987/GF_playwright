@@ -14,6 +14,8 @@ import {
 import moment from 'moment';
 import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
 import * as fs from 'fs';
+import { app } from 'electron';
+import path from 'path';
 
 type configType = { globalState: typeof globalState; routineState: typeof routineState };
 
@@ -181,7 +183,11 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                         await Sleep(3000);
 
                         const cookies = await barCodePage.context().cookies();
-                        fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
+
+                        const documentsPath = app.getPath('documents');
+                        const cookiePath = path.join(documentsPath, exportPath.cookies);
+
+                        fs.writeFileSync(`${cookiePath}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
 
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {
                             const refreshElement = await barCodePage.$('#nc_1_refresh1');

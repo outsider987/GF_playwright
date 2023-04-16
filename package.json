@@ -8,8 +8,9 @@
         "dev": "npx ts-node src/electron/crawler/index.ts",
         "build": "rm -rf dist && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
         "deploy": "rm -rf release && npm run build && electron-builder",
-        "deploy2": "electron-packager . app --platform=win32 --arch=x64 --no-sandbox",
-        "E": "rm -rf dist && tsc -p tsconfig.json && tsc-alias -p tsconfig.json && electron --max-old-space-size=4096 dist/main.js"
+        "deploy2": "rm -rf app-win32-x64 && npm run build && electron-packager . app --platform=win32 --arch=x64 --no-sandbox --disable-gpu-sandbox",
+        "E": "rm -rf dist && tsc -p tsconfig.json && tsc-alias -p tsconfig.json && electron --max-old-space-size=4096 dist/main.js",
+        "linux": "rm -rf node_modules && npm install --platform=win32 --arch=x64 sharp"
     },
     "build": {
         "appId": "com.yourcompany.yourapp",

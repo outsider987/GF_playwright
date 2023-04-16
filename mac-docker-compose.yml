@@ -1,0 +1,9 @@
+version: '3'
+services:
+  playwright-test:
+    image: sickcodes/docker-osx:latest
+    tty: true
+    volumes:
+      - ./src/electron/mac/install-playwright.sh:/install-playwright.sh
+    working_dir: /app/src/electron/mac/
+    command: ["sh", "./install-playwright.sh"]

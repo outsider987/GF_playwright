@@ -43,14 +43,14 @@ async function createWindow() {
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
 app.commandLine.appendSwitch('no-sandbox');
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-software-rasterizer');
-app.commandLine.appendSwitch('disable-gpu-compositing');
-app.commandLine.appendSwitch('disable-gpu-rasterization');
-app.commandLine.appendSwitch('disable-gpu-sandbox');
-app.commandLine.appendSwitch('--no-sandbox');
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-app.disableHardwareAcceleration();
+// app.commandLine.appendSwitch('disable-gpu');
+// app.commandLine.appendSwitch('disable-software-rasterizer');
+// app.commandLine.appendSwitch('disable-gpu-compositing');
+// app.commandLine.appendSwitch('disable-gpu-rasterization');
+// app.commandLine.appendSwitch('disable-gpu-sandbox');
+// app.commandLine.appendSwitch('--no-sandbox');
+// app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+// app.disableHardwareAcceleration();
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

@@ -1,23 +1,26 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, app, ipcMain } from 'electron';
 import { run } from '../../crawler';
 import fs from 'fs';
 import { configPath } from '../../config/bast';
 import { exportPath, routineState } from '../../crawler/config/base';
+import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     const saveConfigPath = `${configPath.stateConfig}/config.json`;
+    const documentsPath = app.getPath('documents');
     const abortController = new AbortController();
-    ipcMain.on('routineStart', (event, args) => {
-        console.log('routine start ');
 
-        fs.writeFileSync(saveConfigPath, JSON.stringify({ ...args }));
-        run({ ...args }, abortController.signal);
+    ipcMain.on('routineStart', async (event, args) => {
+        console.log('routine start ');
+        const filePath = path.join(documentsPath, saveConfigPath);
+        await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
+        await run({ ...args }, abortController.signal);
     });
 
-    ipcMain.on('routineStop', (event, args) => {
+    ipcMain.on('routineStop', async (event, args) => {
         console.log('routine stop ');
 
         const configState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
-        fs.writeFileSync(
+        await fs.writeFileSync(
             saveConfigPath,
             JSON.stringify({ ...configState, globalState: { ...configState.globalState, isRunning: false } }),
         );
@@ -25,16 +28,21 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     });
 
     ipcMain.handle('getRoutineState', async (event, args) => {
-        if (!fs.existsSync(configPath.stateConfig)) fs.mkdirSync(configPath.stateConfig);
-        if (fs.existsSync(saveConfigPath)) {
+        if (await fs.existsSync(`${app.getPath('documents')}/saveConfigPath`)) {
             const oldState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
             if (hasNewKeys(oldState.routineState, args.routineState))
                 updateObject(oldState.routineState, args.routineState);
 
-            fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: oldState.routineState }));
+            await fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: oldState.routineState }));
             return oldState.routineState;
         } else {
-            fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: args.routineState }));
+            // app.setPath('documents', saveConfigPath)
+
+            const filePath = path.join(documentsPath, saveConfigPath);
+            const dirPath = path.join(documentsPath, configPath.stateConfig);
+            console.log(dirPath);
+            fs.mkdirSync(dirPath, { recursive: true });
+            await fs.writeFileSync(filePath, JSON.stringify({ routineState: args.routineState }));
             return args.routineState;
         }
     });
