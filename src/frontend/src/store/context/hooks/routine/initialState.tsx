@@ -92,7 +92,7 @@ export const initialRoutineState = {
         name: '後墬',
         isLine: false,
         type: 'input',
-        value: '【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準',
+        value: '手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準',
         isTextNumer: false,
       },
     },

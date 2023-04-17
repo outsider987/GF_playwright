@@ -35,7 +35,7 @@ const NavBarItem: React.FC<Props> = ({ level = 0, children, iconName, path, isSh
           >
             {isFocus && <div className="absolute right-4 top-[-20.83%] h-2 w-2 rounded-full bg-navBarUnFocusBlue" />}
           </SvgICon>
-          <span className="min-h-[18px] text-center text-2xl leading-[150%] tracking-[0.4px] text-white ">{text}</span>
+          <span className="min-h-[18px] text-center  leading-[150%] tracking-[0.4px] text-white ">{text}</span>
         </Link>
       );
     }

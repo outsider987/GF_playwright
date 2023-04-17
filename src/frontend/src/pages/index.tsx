@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import Header from '~/layouts/Header';
 import { useGlobalContext } from '~/store/context/hooks/global/useGlobalStateHook';
 import { routes } from '~/router';
+import { useGlobalIPC } from '~/ipcRenderAPI/global';
 const Main = () => {
   const { pathname } = useLocation();
   let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
@@ -14,6 +15,8 @@ const Main = () => {
   const container = clsx('flex', 'flex-col', 'text-white');
   const IconSize = '20vw';
   const { globalState, setGlobalState } = useGlobalContext();
+  const { INVOKE_GET_GLOBAL_STATE } = useGlobalIPC();
+
   useEffect(() => {
     console.log(pathname);
     switch (pathname) {
@@ -29,7 +32,11 @@ const Main = () => {
         break;
     }
   }, [pathname]);
-
+  useEffect(() => {
+    INVOKE_GET_GLOBAL_STATE(globalState).then((res) => {
+      setGlobalState({ ...globalState, ...res });
+    });
+  }, [pathname]);
   return (
     <>
       <Header></Header>

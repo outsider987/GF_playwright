@@ -22,11 +22,18 @@ const HomeRoute = {
       text: 'routine',
     },
     {
-      path: '/sizeImage',
-      element: lazyLoad(React.lazy(() => import('~/pages/SizeImage'))),
+      path: '/downLoadImage',
+      element: lazyLoad(React.lazy(() => import('~/pages/downLoadImage'))),
       iconName: 'template',
       isShow: true,
-      text: 'sizeImage',
+      text: 'downLoadImage',
+    },
+    {
+      path: '/settings',
+      element: lazyLoad(React.lazy(() => import('~/pages/Settings'))),
+      iconName: 'template',
+      isShow: true,
+      text: 'settings',
     },
   ],
 };

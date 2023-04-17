@@ -73,14 +73,8 @@ const Routine = () => {
   };
   const state = Object.values(initialRoutineState);
 
-  useEffect(() => {
-    INVOKE_GET_ROUTINE_STATE(routineState).then((res) => {
-      setRoutineState({ ...routineState, ...res });
-    });
-  }, []);
-
   return (
-    <div className=" flex-1 space-y-5 align-bottom text-2xl">
+    <div className=" flex-1 space-y-5 align-bottom ">
       {Object.values(routineState).map((item, index1) => {
         return (
           <div key={index1}>
