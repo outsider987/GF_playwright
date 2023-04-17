@@ -130,21 +130,20 @@ export async function setConstant(editPage: Page, config: configType) {
 }
 
 export async function setBarcode(editPage: Page, context: BrowserContext) {
+    const linkClickSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
+    const linkInpuSelector = '#sourceUrl0';
+    const barcodeLinkInput = await editPage.waitForSelector(linkInpuSelector);
+    await editPage.waitForSelector(linkClickSelector);
+    const linkElement = await editPage.$(linkClickSelector);
+    await linkElement.click();
+    const barCodePage = await context.waitForEvent('page');
     try {
-        const linkClickSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
-        const linkInpuSelector = '#sourceUrl0';
-        const barcodeLinkInput = await editPage.waitForSelector(linkInpuSelector);
-        await editPage.waitForSelector(linkClickSelector);
-        const linkElement = await editPage.$(linkClickSelector);
-        await linkElement.click();
-        const barCodePage = await context.waitForEvent('page');
-
         // const barCodePage = await context.newPage();
         // await context.waitForEvent('page');
         const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
         const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
 
-        await handleGoToPage({ page: barCodePage, url: link, isignoreLoaded: true });
+        // await handleGoToPage({ page: barCodePage, url: link, isignoreLoaded: true });
 
         const url = await barCodePage.url();
         const domain = new URL(url);
@@ -238,7 +237,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
     } catch (error) {
         console.log(`set barcode error: ${error}`);
         const pages = await context.pages();
-        await pages[pages.length - 1].close();
+        await barCodePage.close();
 
         throw error;
     }
@@ -368,10 +367,10 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
         <span>${config.routineState.S.children.後墬.value}</span>
     </div>
  `;
-
-    await iframe.evaluate((html: string) => {
-        document.body.innerHTML = html;
-    }, result);
+    if (!templateRegex.test(newTCinnerHtmlStr))
+        await iframe.evaluate((html: string) => {
+            document.body.innerHTML = html;
+        }, result);
     console.log('newTCValue:', result);
 }
 

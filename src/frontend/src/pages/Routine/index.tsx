@@ -22,7 +22,7 @@ const Routine = () => {
   const handleStart = async (event) => {
     setIsModalOpen(false);
     setGlobalState({ ...globalState, isRunning: true });
-    SEND_ROUTINE_START(routineState, { ...globalState, isRunning: true });
+    SEND_ROUTINE_START(routineState, { ...globalState, mode: 'routine', isRunning: true });
   };
   const handleChange = (e) => {
     const { checked, name } = e.target;
