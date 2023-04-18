@@ -21,7 +21,7 @@ export async function run(
     `);
     const browser: Browser = await firefox.launch({
         headless: false,
-        args: ['--disable-features=site-per-process'],
+        // args: ['--disable-features=site-per-process'],
     });
 
     const context = await browser.newContext({
