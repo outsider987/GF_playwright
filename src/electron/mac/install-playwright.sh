@@ -3,9 +3,6 @@
 echo Installing Homebrew...
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo Installing NVM...
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-
 echo export brew path...
 cd /opt/homebrew/bin/
 PATH=$PATH:/opt/homebrew/bin
