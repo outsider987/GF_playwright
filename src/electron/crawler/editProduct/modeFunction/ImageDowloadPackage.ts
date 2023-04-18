@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { exportPath } from '../../config/base';
 import axios from 'axios';
 import { config } from 'process';
+import { app } from 'electron';
+import path from 'path';
 
 export const startDownloadImageProcess = async (editPage: Page, context: BrowserContext) => {
     console.log('start download image process');
@@ -22,11 +24,15 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
         const url = await imageElement.getAttribute('src');
         if (url) urls.push(url);
     }
-    if (!fs.existsSync(targetPath)) {
-        fs.mkdirSync(targetPath, { recursive: true });
+    const documentsPath = app.getPath('documents');
+
+    const dirPath = path.join(documentsPath, exportPath.downloadImagePackage);
+    const filePath = path.join(dirPath, titleValue);
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
     }
 
-    const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, targetPath, true));
+    const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, filePath, true));
 
     await Promise.all(downloadPromises)
         .then((results) => {

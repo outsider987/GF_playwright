@@ -1,5 +1,5 @@
 import { chromium, Browser, Page, firefox, webkit } from 'playwright';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
@@ -9,7 +9,7 @@ import { configPath } from '../config/bast';
 import { app } from 'electron';
 import path from 'path';
 
-dotenv.config();
+// dotenv.config();
 export async function run(
     args: { routineState: typeof initialRoutineStateType; globalState: typeof globalConfigType },
     abortSignal: any,
@@ -48,12 +48,16 @@ export async function run(
 
         const page: Page = await context.newPage();
         // Load cookies from file if it exists
+
+        const documentsPath = app.getPath('documents');
+        const cookiePath = path.join(documentsPath, exportPath.cookies);
+
         if (fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
             const cookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/cookies.json`, 'utf8'));
 
             await context.addCookies(cookies);
-            if (fs.existsSync(`${exportPath.cookies}/aliasCookies.json`)) {
-                const aliasCookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'));
+            if (fs.existsSync(`${cookiePath}/aliasCookies.json`)) {
+                const aliasCookies = JSON.parse(fs.readFileSync(`${cookiePath}/aliasCookies.json`, 'utf8'));
                 await context.addCookies(aliasCookies);
             }
 

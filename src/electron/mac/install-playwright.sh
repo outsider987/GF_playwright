@@ -1,14 +1,16 @@
 #!/bin/bash
-echo Installing Homebrew...
 
+echo Installing Homebrew...
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo Installing Node.js and NPM using Homebrew...
+echo Installing NVM...
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 
-brew install node
+echo Installing stable Node.js...
+source ~/.bashrc
+nvm install --lts
 
 echo Installing Playwright...
-
 npx install playwright
 
 if [ $? -ne 0 ]; then

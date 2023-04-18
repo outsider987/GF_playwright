@@ -9,7 +9,7 @@ interface Props extends React.HTMLAttributes<HTMLElement> {
 }
 const CheckBox = ({ name, checked, onChange, className }: Props) => {
   return (
-    <div className="!m-auto flex w-auto items-center justify-center ">
+    <div className="flex w-auto items-center justify-center ">
       <input
         type="checkbox"
         checked={checked}

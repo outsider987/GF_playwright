@@ -26,6 +26,8 @@ export const globalState = {
     saveMode: false,
     mode: mode.sizeImage,
     isRunning: false,
+    target: '',
+    subTarget: '',
 };
 
 export const routineState = {

@@ -8,6 +8,7 @@ import { useRoutineAPI } from '~/ipcRenderAPI/routine';
 import { useRoutineContext } from '~/store/context/hooks/routine/useRoutineStateHook';
 import { useGlobalContext } from '~/store/context/hooks/global/useGlobalStateHook';
 import Button from '~/components/Button';
+import Input from '~/components/Input/Input';
 
 const downLoadImage = () => {
   const { pathname } = useLocation();
@@ -22,10 +23,20 @@ const downLoadImage = () => {
     SEND_ROUTINE_START(routineState, { ...globalState, mode: 'downloadImagePackage' });
   };
   return (
-    <div>
-      <Button onClick={handleStart} className="flex w-[20vw]">
-        Start
-      </Button>
+    <div className="flex flex-col space-y-4">
+      {/* <div className="flex space-x-3 ">
+        <span>目標</span>
+        <Input></Input>
+        <span>子目標</span>
+        <Input></Input>
+      </div> */}
+
+      <div className=" flex justify-start pl-4">
+        <Button onClick={handleStart} className="flex w-[20vw]">
+          Start
+        </Button>
+      </div>
+
       <ConfirmCancelModal
         titile={'確認要啟動?'}
         backdrop={() => setIsModalOpen(false)}

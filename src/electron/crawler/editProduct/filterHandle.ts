@@ -4,6 +4,7 @@ import { recognizeImage } from '../utils/image';
 import fs from 'fs';
 import csv from 'csvtojson';
 import { Sleep } from '../utils/utils';
+import { globalState as globalConfigType } from '../config/base';
 
 export const getCurrentDoman = async (editPage: Page) => {
     const linkInpuSelector = '#sourceUrl0';
@@ -136,17 +137,20 @@ const convertTotableHtml = async (input: string) => {
     }
 };
 
-export const openOnlineProduct = async (page: Page, context: BrowserContext) => {
-    const collpaseElements = await page.$$('.outDiv.node_top');
+export const openOnlineProduct = async (page: Page, context: BrowserContext, globalState: typeof globalConfigType) => {
+    const onlineProduct = await page.$('#productOnlineTree');
+
+    const collpaseElements = await onlineProduct.$$('.outDiv.node_top');
     for (const [index, collpase] of collpaseElements.entries()) {
         const label = await (await collpase.$('div')).innerText();
         const aTag = await collpase.$('a');
-        if (aTag && (await aTag.isVisible()) && label !== '所有分类') {
+        if (aTag && (await aTag.isVisible()) && label === globalState.target) {
             await aTag.click();
         }
     }
-    const elementClick = await page.$$('div.myj_tree_node[title="230416"]');
-    await elementClick[1].click();
+
+    const elementClick = await onlineProduct.$(`div.myj_tree_node[title="${globalState.subTarget}"]`);
+    await elementClick.click();
     const response = await context.waitForEvent('response');
     await Sleep(1000);
 };

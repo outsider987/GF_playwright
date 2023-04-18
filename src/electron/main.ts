@@ -1,7 +1,7 @@
 import { app, BrowserWindow, crashReporter, screen } from 'electron';
-import * as path from 'path';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
+import { environment } from './config/bast';
 
 let mainWindow: Electron.BrowserWindow | null;
 
@@ -29,10 +29,12 @@ async function createWindow() {
 
     // Load the Playwright page in the Electron window.
 
-    mainWindow.loadURL('http://localhost:8080');
+    environment.production
+        ? mainWindow.loadURL(`file://${__dirname}/frontend/index.html`)
+        : mainWindow.loadURL('http://localhost:8080');
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
     RegisterFrontendEvents(mainWindow);
 
     // Emitted when the window is closed.
@@ -42,7 +44,8 @@ async function createWindow() {
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
-app.commandLine.appendSwitch('no-sandbox');
+
+environment.production && app.commandLine.appendSwitch('no-sandbox');
 // app.commandLine.appendSwitch('disable-gpu');
 // app.commandLine.appendSwitch('disable-software-rasterizer');
 // app.commandLine.appendSwitch('disable-gpu-compositing');

@@ -24,8 +24,6 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
             await fs.writeFileSync(baseSaveConfigPath, JSON.stringify({ globalState: oldState.routineState }));
             return oldState.globalState;
         } else {
-            // app.setPath('documents', saveConfigPath)
-
             fs.mkdirSync(dirPath, { recursive: true });
             await fs.writeFileSync(filePath, JSON.stringify({ globalState: globalState }));
             return globalState;

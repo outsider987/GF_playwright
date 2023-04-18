@@ -26,7 +26,7 @@ const HomeRoute = {
       element: lazyLoad(React.lazy(() => import('~/pages/downLoadImage'))),
       iconName: 'template',
       isShow: true,
-      text: 'downLoadImage',
+      text: 'downLoad',
     },
     {
       path: '/settings',

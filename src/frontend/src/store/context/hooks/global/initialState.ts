@@ -4,4 +4,6 @@ export const initialGlobalState = {
   debug: false,
   saveMode: false,
   count: 1,
+  target: '',
+  subTarget: '',
 };

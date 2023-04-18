@@ -178,14 +178,16 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                         await needDragSliderElement.hover();
                         await needDragSliderElement.dispatchEvent('mousedown', { button: 'left' });
                         await Sleep(1000);
+                        await needDragSliderElement.dispatchEvent('mousemove', { button: 'left' });
                         await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
                         await Sleep(3000);
+                        await needDragSliderElement.dispatchEvent('mouseup', { button: 'left' });
 
                         const cookies = await barCodePage.context().cookies();
 
                         const documentsPath = app.getPath('documents');
                         const cookiePath = path.join(documentsPath, exportPath.cookies);
-
+                        if (!fs.existsSync(cookiePath) === false) fs.mkdirSync(cookiePath);
                         fs.writeFileSync(`${cookiePath}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
 
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {

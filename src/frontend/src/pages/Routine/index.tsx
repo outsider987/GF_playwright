@@ -65,7 +65,7 @@ const Routine = () => {
 
   const filedCssClass = (isLine, type) => {
     const className = clsx(
-      'flex space-y-4 pl-4',
+      'flex space-y-4 pl-4 items-baseline',
       isLine ? 'w-full' : '',
       type === 'checkbox' ? 'justify-end flex-row-reverse items-center' : 'flex-col',
     );

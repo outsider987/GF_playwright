@@ -1,0 +1,9 @@
+{
+    "dir": ".",
+    "name": "app",
+    "platform": "win32",
+    "arch": "x64",
+    "out": "build",
+    "ignore": "node_modules",
+    "exclude": ["**/*.map", "src/"]
+}
