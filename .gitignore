@@ -6,3 +6,4 @@ dist/
 temp
 release/
 app-win32-x64/
+app-darwin-x64/

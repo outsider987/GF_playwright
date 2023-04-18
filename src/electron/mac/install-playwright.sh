@@ -6,12 +6,23 @@ echo Installing Homebrew...
 echo Installing NVM...
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 
+echo export brew path...
+cd /opt/homebrew/bin/
+PATH=$PATH:/opt/homebrew/bin
+
+echo install nvm 
+brew install nvm 
+
+echo export nvm path...
+export NVM_DIR="$HOME/.nvm" 
+. "/opt/homebrew/opt/nvm/nvm.sh"
+
 echo Installing stable Node.js...
 source ~/.bashrc
-nvm install --lts
+nvm install 16
 
 echo Installing Playwright...
-npx install playwright
+npm install -g playwright
 
 if [ $? -ne 0 ]; then
     echo Failed to install Playwright.
