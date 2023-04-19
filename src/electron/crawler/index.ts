@@ -36,22 +36,11 @@ export async function run(
         bypassCSP: true,
     });
     try {
-        // abortSignal.onabort(() => {
-        //     browser.close();
-        //     return 'tesr';
-        // });
-        // new Promise((resolve, reject) => {
-        //     abortSignal.addEventListener('abort', () => {
-        //         reject(new DOMException('Aborted', 'AbortError'));
-        //     });
-        // });
-
         const page: Page = await context.newPage();
-        // Load cookies from file if it exists
 
         const documentsPath = app.getPath('documents');
         const cookiePath = path.join(documentsPath, exportPath.cookies);
-
+        // await page.goto('https://www.dianxiaomi.com/index.htm', { timeout: 0 });
         if (fs.existsSync(`${cookiePath}/cookies.json`)) {
             const cookies = JSON.parse(fs.readFileSync(`${cookiePath}/cookies.json`, 'utf8'));
 
@@ -68,7 +57,7 @@ export async function run(
             });
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
-            await page.goto('https://www.dianxiaomi.com/index.htm', { timeout: 0 });
+            await page.goto('https://www.dianxiaomi.com/index.htm');
 
             console.log('start wait input name');
             const accountSelector = '#exampleInputName';

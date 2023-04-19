@@ -21,7 +21,7 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
             const oldState = JSON.parse(fs.readFileSync(filePath, 'utf8'));
             if (hasNewKeys(oldState.globalState, globalState)) updateObject(oldState.globalState, globalState);
 
-            await fs.writeFileSync(baseSaveConfigPath, JSON.stringify({ globalState: oldState.routineState }));
+            await fs.writeFileSync(filePath, JSON.stringify({ globalState: oldState.routineState }));
             return oldState.globalState;
         } else {
             fs.mkdirSync(dirPath, { recursive: true });
