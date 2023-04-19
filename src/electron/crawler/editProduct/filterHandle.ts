@@ -144,14 +144,12 @@ export const openOnlineProduct = async (page: Page, context: BrowserContext, glo
     for (const [index, collpase] of collpaseElements.entries()) {
         const label = await (await collpase.$('div')).innerText();
         const aTag = await collpase.$('a');
-        if (aTag && (await aTag.isVisible()) && label === globalState.target.replace(/\n/g, '')) {
+        if (aTag && (await aTag.isVisible()) && label === globalState.target) {
             await aTag.click();
         }
     }
 
-    const elementClick = await onlineProduct.$(
-        `div.myj_tree_node[title="${globalState.subTarget.replace(/\n/g, '')}"]`,
-    );
+    const elementClick = await onlineProduct.$(`div.myj_tree_node[title="${globalState.subTarget}"]`);
     await elementClick.click();
     const response = await context.waitForEvent('response');
     await Sleep(1000);

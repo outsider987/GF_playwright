@@ -187,7 +187,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
 
                         const documentsPath = app.getPath('documents');
                         const cookiePath = path.join(documentsPath, exportPath.cookies);
-                        if (!fs.existsSync(cookiePath) === false) fs.mkdirSync(cookiePath);
+                        if (!fs.existsSync(cookiePath)) fs.mkdirSync(cookiePath);
                         fs.writeFileSync(`${cookiePath}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
 
                         if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {

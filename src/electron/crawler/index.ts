@@ -52,7 +52,7 @@ export async function run(
         const documentsPath = app.getPath('documents');
         const cookiePath = path.join(documentsPath, exportPath.cookies);
 
-        if (fs.existsSync(`${exportPath.cookies}/cookies.json`)) {
+        if (fs.existsSync(`${cookiePath}/cookies.json`)) {
             const cookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/cookies.json`, 'utf8'));
 
             await context.addCookies(cookies);
@@ -68,7 +68,7 @@ export async function run(
             });
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
-            await page.goto('https://www.dianxiaomi.com/index.htm');
+            await page.goto('https://www.dianxiaomi.com/index.htm', { timeout: 0 });
 
             console.log('start wait input name');
             const accountSelector = '#exampleInputName';
@@ -139,10 +139,7 @@ export async function run(
             await page.waitForNavigation();
             page.waitForLoadState('networkidle');
             */
-            await page.waitForNavigation();
-
-            const documentsPath = app.getPath('documents');
-            const cookiePath = path.join(documentsPath, exportPath.cookies);
+            await page.waitForNavigation({ timeout: 600000 });
 
             const cookies = await page.context().cookies();
             if (!fs.existsSync(`${cookiePath}`)) {
