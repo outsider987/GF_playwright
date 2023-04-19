@@ -53,7 +53,7 @@ export async function run(
         const cookiePath = path.join(documentsPath, exportPath.cookies);
 
         if (fs.existsSync(`${cookiePath}/cookies.json`)) {
-            const cookies = JSON.parse(fs.readFileSync(`${exportPath.cookies}/cookies.json`, 'utf8'));
+            const cookies = JSON.parse(fs.readFileSync(`${cookiePath}/cookies.json`, 'utf8'));
 
             await context.addCookies(cookies);
             if (fs.existsSync(`${cookiePath}/aliasCookies.json`)) {
