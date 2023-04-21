@@ -38,7 +38,7 @@ export async function run(
     try {
         const page: Page = await context.newPage();
 
-        const documentsPath = app.getPath('documents');
+        const documentsPath = app ? app.getPath('documents') : './';
         const cookiePath = path.join(documentsPath, exportPath.cookies);
         // await page.goto('https://www.dianxiaomi.com/index.htm', { timeout: 0 });
         if (fs.existsSync(`${cookiePath}/cookies.json`)) {
@@ -149,4 +149,4 @@ export async function run(
         error.isRunning ? browser.close() : await run(args, abortSignal);
     }
 }
-// run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');
+run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');

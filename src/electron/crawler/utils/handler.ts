@@ -49,6 +49,8 @@ export const handleClodeModal = async (page: Page) => {
     if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
     await Sleep(1000);
     if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
+    await Sleep(1000);
+    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
 };
 
 export const handleError = async (

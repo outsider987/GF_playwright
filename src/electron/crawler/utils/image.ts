@@ -87,14 +87,14 @@ export async function removeSimilarImages(images: string[]) {
 export async function recognizeImage(url: string): Promise<string> {
     try {
         const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
-        const preprocessedImage = await sharp(response.data).resize(1200).greyscale().normalize().sharpen().toBuffer();
+        const preprocessedImage = await sharp(response.data).resize(1000).greyscale().normalize().sharpen().toBuffer();
 
         // Extract text using Tesseract.js with the chi_tra language data
         const result = await Tesseract.recognize(preprocessedImage, {
             lang: 'chi_sim',
-            psm: 3,
-            // oem: 1,
-            // dpi: 150,
+            psm: 4,
+            oem: 1,
+            dpi: 150,
 
             // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
         });

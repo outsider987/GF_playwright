@@ -38,6 +38,7 @@ export async function startEditPage(
         const edits = await bodyElement.$$('a:text("编辑")');
 
         console.log('start loop edit');
+        const collectDatas = [] as any;
 
         for (const [index, edit] of edits.entries()) {
             if (edits.length === currentEditIndex) {
@@ -95,7 +96,7 @@ export async function startEditPage(
 
                     break;
                 case mode.sizeImage:
-                    await startSizeImageProcess(editPage, context);
+                    await startSizeImageProcess(editPage, context, collectDatas);
                     currentEditIndex++;
                     await editPage.close();
                     continue;

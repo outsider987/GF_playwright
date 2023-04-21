@@ -24,7 +24,7 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
         const url = await imageElement.getAttribute('src');
         if (url) urls.push(url);
     }
-    const documentsPath = app.getPath('documents');
+    const documentsPath = app ? app.getPath('documents') : './';
 
     const dirPath = path.join(documentsPath, exportPath.downloadImagePackage);
     const filePath = path.join(dirPath, titleValue);

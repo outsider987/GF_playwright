@@ -12,7 +12,7 @@ import {
     routineState,
 } from '../config/base';
 import moment from 'moment';
-import { getCurrentDoman, getDuplicatedIndexs, saveSizeHtmlString } from './filterHandle';
+import { getCurrentDoman, getDuplicatedIndexs } from './filterHandle';
 import * as fs from 'fs';
 import { app } from 'electron';
 import path from 'path';
@@ -185,7 +185,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
 
                         const cookies = await barCodePage.context().cookies();
 
-                        const documentsPath = app.getPath('documents');
+                        const documentsPath = app ? app.getPath('documents') : './';
                         const cookiePath = path.join(documentsPath, exportPath.cookies);
                         if (!fs.existsSync(cookiePath)) fs.mkdirSync(cookiePath);
                         fs.writeFileSync(`${cookiePath}/aliasCookies.json`, JSON.stringify(cookies, null, 2));

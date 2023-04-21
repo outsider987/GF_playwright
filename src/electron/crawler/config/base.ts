@@ -14,7 +14,7 @@ export const exportPath = {
     downloadImagePackage: 'temp/allImage',
     cookies: 'temp/cookies',
 };
-export const sensitiveWord = '胸圍腰圍臀圍衣長褲長袖長肩寬身高體重';
+export const sensitiveWord = '胸圍腰圍臀圍衣長褲長袖長肩寬';
 
 export const AliaRoute = [targetUrl.Alia, targetUrl.Alia2];
 
@@ -26,8 +26,8 @@ export const globalState = {
     saveMode: false,
     mode: mode.sizeImage,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: '廣州黃爭',
+    subTarget: '20230421',
 };
 
 export const routineState = {
