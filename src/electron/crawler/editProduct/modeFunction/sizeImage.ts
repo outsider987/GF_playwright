@@ -17,7 +17,7 @@ export const startSizeImageProcess = async (editPage: Page, context: BrowserCont
     const bodyElement = await iframe.$('body');
 
     const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
-    let finalStr = '';
+
     const isIamgePattern = /<img[^>]*>/g;
     if (isIamgePattern.test(newTCinnerHtmlStr)) {
         const headerSelector = '#title';
@@ -125,7 +125,6 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
     }
 
     XLSX.utils.sheet_add_aoa(worksheet, rowDatas, { origin: -1 });
-    // XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet2');
 
     XLSX.writeFile(workbook, destinationFile);
 };
