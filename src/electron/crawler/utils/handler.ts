@@ -39,8 +39,8 @@ export const reWaitSelector = async ({ page, selector, retry = 0 }: ReRequestPag
 export const handleClodeModal = async (page: Page) => {
     const tBodySelector = '#shopifySysMsg';
 
-    await page.waitForSelector(tBodySelector);
-
+    // await page.waitForSelector(tBodySelector);
+    await Sleep(2000);
     // await page.waitForLoadState('networkidle');
     console.log('start close modal');
     await Sleep(1000);

@@ -8,6 +8,7 @@ import {
     routineState,
     mode,
     globalState as globalConfigType,
+    globalState,
 } from '../config/base';
 import { startProcessCodeFlow } from './processFlow';
 import { WordTokenizer } from 'natural';
@@ -16,6 +17,7 @@ import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
 import { openOnlineProduct } from './filterHandle';
 import * as fs from 'fs';
 import { configPath } from '../../config/bast';
+import { startShopeMode } from './modeFunction/shopeMode';
 let currentEditIndex = 0;
 export async function startEditPage(
     page: Page,
@@ -45,26 +47,29 @@ export async function startEditPage(
                 await page.close();
             }
             const newEdit = await edits[currentEditIndex];
+
             await newEdit.click();
-            let SKU = '';
+
             const editPage = await context.waitForEvent('page');
-            // await editPage.waitForLoadState('networkidle', { timeout: 40000 });
-            await editPage.waitForSelector('[data-name="sku"]');
-            const skuInputElementS = await editPage.$$('[data-name="sku"]');
-            let inputValue = '';
-            for (const sku of skuInputElementS) {
-                const inputElement = await sku.$('input');
-                if (inputElement && (await inputElement.inputValue()) !== '') {
-                    inputValue = await inputElement.inputValue();
-                    break;
-                }
-            }
+
+            let SKU = '';
 
             console.log('loaded edit page');
 
             await editPage.waitForSelector(headerSelector);
             switch (config.globalState.mode) {
                 case mode.routine:
+                    await editPage.waitForSelector('[data-name="sku"]');
+                    const skuInputElementS = await editPage.$$('[data-name="sku"]');
+                    let inputValue = '';
+                    for (const sku of skuInputElementS) {
+                        const inputElement = await sku.$('input');
+
+                        if (inputElement && (await inputElement.inputValue()) !== '') {
+                            inputValue = await inputElement.inputValue();
+                            break;
+                        }
+                    }
                     const regex = /[BCMSITF]+/; // Matches any characters between 【 and 】
 
                     // check title is match 【】
@@ -107,6 +112,10 @@ export async function startEditPage(
                     currentEditIndex++;
                     await editPage.close();
                     continue;
+
+                case mode.shope:
+                    startShopeMode(editPage, context);
+                    break;
 
                 default:
                     break;

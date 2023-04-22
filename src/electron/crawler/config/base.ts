@@ -2,6 +2,7 @@ export const mode = {
     routine: 'routine',
     sizeImage: 'sizeImage',
     downloadImagePackage: 'downloadImagePackage',
+    shope: 'shope',
 };
 
 export const targetUrl = {
@@ -24,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
-    mode: mode.sizeImage,
+    mode: mode.shope,
     isRunning: false,
-    target: '廣州黃爭',
-    subTarget: '20230421',
+    target: '',
+    subTarget: '',
 };
 
 export const routineState = {

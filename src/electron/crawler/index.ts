@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { configPath } from '../config/bast';
 import { app } from 'electron';
 import path from 'path';
+import { startShopeEditPage } from './editProduct/shopeEdit';
 
 // dotenv.config();
 export async function run(
@@ -28,7 +29,7 @@ export async function run(
         // Set a random user agent string with each request
         // userAgent: await browser.userAgent(),
         // Emulate mouse and keyboard inputs to mimic human behavior
-        // viewport: { width: 1920, height: 1080 },
+        viewport: { width: 1920, height: 1080 },
         deviceScaleFactor: 1,
         hasTouch: false,
         isMobile: false,
@@ -36,6 +37,7 @@ export async function run(
         bypassCSP: true,
     });
     try {
+        const isShope = globalState.mode === 'shope';
         const page: Page = await context.newPage();
 
         const documentsPath = app ? app.getPath('documents') : './';
@@ -52,7 +54,9 @@ export async function run(
 
             await handleGoToPage({
                 page,
-                url: 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft',
+                url: isShope
+                    ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
+                    : 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft',
                 isignoreLoaded: true,
             });
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
@@ -80,54 +84,6 @@ export async function run(
             const loginBtnField = await page.$(loginBtn);
             const validateField = await page.$(validateSelector);
 
-            /*
-            // Take a screenshot of the element
-            console.log('start screenshot');
-            const screenshotBuffer = await validateImgField.screenshot();
-
-            // Save the screenshot to a file
-            const filename = 'temp/screenshot.png';
-            fs.writeFileSync(filename, screenshotBuffer);
-
-            // Set the value of the input field
-            await inputField.fill(ACCOUNT);
-            await passField.fill(PASSWORD);
-
-            // Open a new tab
-            const ImageTotextPage: Page = await browser.newPage();
-            ImageTotextPage.goto('https://www.imagetotext.info/');
-
-            const sunbmitSelector = '#jsShadowRoot';
-            // const sunbmitSelector = `//*[contains(text(), 'Submit')]`
-            const uploadSelector = '.browse-btn';
-            const resultSelector = '.response-result.js-to-copy';
-            const afterSetUpSelector = '.before-upload.upload-area.d-none';
-
-            await ImageTotextPage.waitForSelector(uploadSelector);
-            await ImageTotextPage.waitForSelector(sunbmitSelector);
-
-            const fileInput = await ImageTotextPage.$('#file');
-            await fileInput.setInputFiles('./temp/screenshot.png');
-            //
-            const submitElement = await ImageTotextPage.$(sunbmitSelector);
-            const uploadElement = await ImageTotextPage.$(uploadSelector);
-
-            console.log('start upload number image file');
-            await submitElement?.click();
-
-            await ImageTotextPage.waitForSelector(resultSelector, { timeout: 100000 });
-            const resultElement = await ImageTotextPage.$(resultSelector);
-
-            const trimResult = (await resultElement?.innerText()).replace(/\s+/g, '');
-            await validateField.fill(trimResult);
-            console.log('validate code is :', trimResult);
-            await ImageTotextPage.close();
-
-            console.log('start login');
-            await loginBtnField?.click();
-            await page.waitForNavigation();
-            page.waitForLoadState('networkidle');
-            */
             await page.waitForNavigation({ timeout: 600000 });
 
             const cookies = await page.context().cookies();
@@ -140,7 +96,9 @@ export async function run(
         }
         // await SelectAllEdit(page);
 
-        await startEditPage(page, context, { routineState, globalState });
+        isShope
+            ? await startShopeEditPage(page, context, { routineState, globalState })
+            : await startEditPage(page, context, { routineState, globalState });
         await browser.close();
         console.log('end');
     } catch (error) {
