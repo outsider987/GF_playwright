@@ -31,6 +31,9 @@ export async function startShopeEditPage(
         await handleClodeModal(page);
         // if (config.globalState.target !== '' && config.globalState.subTarget !== '')
         //     await openOnlineProduct(page, context, config.globalState);
+        const draftDivElement = await page.waitForSelector('#draftDiv');
+        await Sleep(1000);
+        await draftDivElement.click();
 
         if (globalState.mode === 'shope') {
             const alicegirlBtn = await page.waitForSelector('a:text("alicegirl")');
@@ -52,16 +55,15 @@ export async function startShopeEditPage(
             await newEdit.click();
 
             const editPage = await context.waitForEvent('page');
+            if (!(await startShopeMode(editPage, context))) continue;
 
-            await startShopeMode(editPage, context);
-
-            if (config.globalState.saveMode && mode.routine === config.globalState.mode) {
+            if (config.globalState.saveMode) {
                 console.log('start save');
                 // if (SKU === '') {
                 //     console.log('code no change, close edit page');
                 //     editPage.close();
                 // }
-                const saveElement = await editPage.$('[data-value="save-4"]');
+                const saveElement = await editPage.$('.btn-orange.m-left10.toSubmit:text("保存")');
                 await saveElement?.click();
                 await editPage.waitForSelector('#msgText');
                 await editPage.close();

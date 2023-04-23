@@ -24,7 +24,7 @@ export const defaultCode = 'SBCMITF';
 export const globalState = {
     count: 1,
     debug: true,
-    saveMode: false,
+    saveMode: true,
     mode: mode.shope,
     isRunning: false,
     target: '',

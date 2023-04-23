@@ -104,16 +104,21 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         // to get only had sensitive word
         const fromImageTextJson = await csv().fromString(text);
         let row2 = '';
+        let templateKey = [];
         for (const [index, imageTextObject] of Object.values(fromImageTextJson).entries()) {
             if (index === 0) {
                 const imageText = Object.values(imageTextObject)[0] as any;
 
                 const imageTextArray = imageText.split(/\s+/gm);
-                row2 = imageTextArray.join(' ');
-                row2 += '\n';
+                templateKey = imageTextArray;
+                // row2 = imageTextArray.join(' ');
+                // row2 += '\n';
             } else {
                 const tempstring = Object.values(imageTextObject)[0] as any;
-                row2 += tempstring.split(/\s+/).join(' ') + '\n';
+                const newTempString = templateKey.map(
+                    (key: any, index: any) => `${key} ${tempstring.split(/\s+/)[index]}`,
+                );
+                row2 += newTempString.join(' ') + '\n';
                 // row2 = row2.replace(/\s+/g, '');
             }
         }

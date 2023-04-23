@@ -1,5 +1,7 @@
 import { BrowserContext, Page } from 'playwright';
+import XLSX from 'xlsx';
 import { downloadImage, loadImage } from '../../utils/image';
+
 import * as fs from 'fs';
 import { exportPath } from '../../config/base';
 import axios from 'axios';
@@ -8,7 +10,7 @@ import { app } from 'electron';
 import path from 'path';
 import { convertToTraditionalChinese } from '../../utils/utils';
 
-export const startShopeMode = async (editPage: Page, context: BrowserContext) => {
+export const startShopeMode = async (editPage: Page, context: BrowserContext): Promise<boolean> => {
     let tryCound = 0;
     try {
         await editPage.waitForLoadState('networkidle');
@@ -16,7 +18,12 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext) =>
         const categeoryElement = await editPage.waitForSelector('#categoryHistoryId');
 
         // start title
-        const titleStr = (await titleElement.inputValue()).replace(/【(.*?)】/, '🌷');
+        if (await (await titleElement.inputValue()).match(/🌷/)) {
+            await editPage.close();
+            return false;
+        }
+        const titleStr = (await titleElement.inputValue()).replace(/【(.*?)】/, '🌷').replace(/\d+$/, '');
+        const skuNumber = (await titleElement.inputValue()).match(/【(.*?)】/)[1];
         await titleElement.fill(titleStr);
 
         //expand
@@ -24,15 +31,17 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext) =>
         const expandBtn = await editPage.$('#otherAttrShowAndHide');
         await expandBtn.click();
         const brandId = await editPage.$('.chosen-container.chosen-container-single');
-        const a = await brandId.$('a');
-        await a.click();
-        const brandIdOption = await brandId.$('li.active-result.result-selected[data-option-array-index="1"]');
-        await brandIdOption.click();
+        if (await brandId.isVisible()) {
+            const a = await brandId.$('a');
+            await a.click();
+            const brandIdOption = await brandId.$('li.active-result[data-option-array-index="1"]');
+            await brandIdOption.click();
 
-        const checkbox = await editPage.$(
-            'input[type="checkbox"][value="1535"] + span.checkboxName:has-text("韩风(Korean)")',
-        );
-        if (!(await checkbox.isEnabled())) await checkbox.click();
+            const checkbox = await editPage.$(
+                'input[type="checkbox"][value="1535"] + span.checkboxName:has-text("韩风(Korean)")',
+            );
+            if (checkbox && !(await checkbox.isEnabled())) await checkbox.click();
+        }
 
         // money
         const moneyTable = await editPage.$('#skuInfoTable');
@@ -47,26 +56,43 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext) =>
         const match = priceText.match(regex);
         const price = match ? parseFloat(match[1]) : null;
         const inputFields = await moneyTable.$$('[name="price"]');
+        const productStocks = await editPage.$$(
+            'input.form-component.p-right25.sameVarinatIpt[type="text"][name="stock"][formtype="productStock"][datatype="productStock"]',
+        );
 
         for (const input of inputFields) {
             await input.fill(price.toString());
         }
 
-        const options = await categeoryElement.$$('option');
-        // for (const option of options) {
-        //     const str = await convertToTraditionalChinese(await option.innerText());
-        //     const key = str.replace(/\((.*?)\)/, '');
-        //     if ((await titleElement.innerText()).indexOf(key) !== -1) {
-        //         await option.click();
-        //         break;
-        //     }
-        // }
+        // set inventory number
+        for (const input of productStocks) {
+            await input.fill('3');
+        }
+
+        const destinationFile = `${__dirname}/../../config/output.xlsx`;
+
+        let workbook = XLSX.readFile(destinationFile, { sheets: 'Sheet1' });
+
+        const jsons = XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']);
+
+        const textareas = await editPage.$('textarea');
+
+        if ((await textareas.inputValue()) !== '')
+            for (const json of jsons) {
+                const { 流水號, content } = json as any;
+                if (skuNumber === 流水號) {
+                    await textareas.fill(content);
+                }
+            }
+        return true;
     } catch (error) {
         console.log(error);
         tryCound++;
-        if (tryCound < 5) {
+        if (tryCound > 5) {
+            await editPage.close();
             throw 'failed startShopeMode';
         }
-        await startShopeMode(editPage, context);
+
+        return await startShopeMode(editPage, context);
     }
 };
