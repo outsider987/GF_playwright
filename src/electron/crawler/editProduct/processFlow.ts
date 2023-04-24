@@ -208,7 +208,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                     }
                 }
                 // await barCodePage.waitForLoadState('networkidle');
-                // await Sleep(1000);
+
                 const targetElement = await barCodePage.waitForSelector(spanSelector);
                 const barcodeAlia = await targetElement.innerHTML();
                 if (!barcodeAlia) throw new Error('barcode is empty');
@@ -223,6 +223,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 await barCodePage.close();
                 break;
             case targetUrl.socwung:
+                await Sleep(3000);
                 await editPage.waitForSelector('[data-name="barcode"]');
                 const barcodeElement = await barCodePage.waitForSelector('text=货号:');
                 const barcode = await (await barcodeElement.innerText()).replace(/\D/g, '');

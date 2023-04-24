@@ -24,11 +24,11 @@ export const defaultCode = 'SBCMITF';
 export const globalState = {
     count: 1,
     debug: true,
-    saveMode: true,
-    mode: mode.shope,
+    saveMode: false,
+    mode: mode.sizeImage,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: '小米粒夏日',
+    subTarget: '20230424',
 };
 
 export const routineState = {
