@@ -1,9 +1,14 @@
-import { app, BrowserWindow, crashReporter, screen } from 'electron';
+import { app, autoUpdater, BrowserWindow, crashReporter, dialog, screen } from 'electron';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/bast';
 
 let mainWindow: Electron.BrowserWindow | null;
+
+const server = 'https://your-deployment-url.com';
+const url = `${server}/update/${process.platform}/${app.getVersion()}`;
+
+autoUpdater.setFeedURL({ url });
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();
@@ -41,6 +46,9 @@ async function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
+    setInterval(() => {
+        autoUpdater.checkForUpdates();
+    }, 60000);
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
@@ -84,4 +92,23 @@ app.on('activate', function () {
     if (mainWindow === null) {
         createWindow();
     }
+});
+
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+    const dialogOpts = {
+        type: 'info',
+        buttons: ['Restart', 'Later'],
+        title: 'Application Update',
+        message: process.platform === 'win32' ? releaseNotes : releaseName,
+        detail: 'A new version has been downloaded. Restart the application to apply the updates.',
+    };
+
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+        if (returnValue.response === 0) autoUpdater.quitAndInstall();
+    });
+});
+
+autoUpdater.on('error', (message) => {
+    console.error('There was a problem updating the application');
+    console.error(message);
 });
