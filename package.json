@@ -31,7 +31,8 @@
             "package.json"
         ],
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "src/electron/config/icon.jpg"
         },
         "mac": {
             "category": "your.app.category"
