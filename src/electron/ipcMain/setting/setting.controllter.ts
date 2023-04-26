@@ -16,12 +16,13 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
         await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
     });
 
-    ipcMain.handle('getGlobalState', async (event, globalState) => {
+    ipcMain.handle('getGlobalState', async (event, param) => {
+        const { globalState } = param;
         if (await fs.existsSync(filePath)) {
             const oldState = JSON.parse(fs.readFileSync(filePath, 'utf8'));
             if (hasNewKeys(oldState.globalState, globalState)) updateObject(oldState.globalState, globalState);
 
-            await fs.writeFileSync(filePath, JSON.stringify({ globalState: oldState.routineState }));
+            await fs.writeFileSync(filePath, JSON.stringify({ globalState: oldState.globalState }));
             return oldState.globalState;
         } else {
             fs.mkdirSync(dirPath, { recursive: true });

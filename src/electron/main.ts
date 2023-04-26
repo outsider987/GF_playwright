@@ -5,10 +5,10 @@ import { environment } from './config/bast';
 
 let mainWindow: Electron.BrowserWindow | null;
 
-const server = 'https://your-deployment-url.com';
-const url = `${server}/update/${process.platform}/${app.getVersion()}`;
+// const server = 'https://your-deployment-url.com';
+// const url = `${server}/update/${process.platform}/${app.getVersion()}`;
 
-autoUpdater.setFeedURL({ url });
+// autoUpdater.setFeedURL({ url });
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();
@@ -92,6 +92,23 @@ app.on('activate', function () {
     if (mainWindow === null) {
         createWindow();
     }
+});
+
+autoUpdater.on('update-available', (_event: any, _releaseNotes: any, _releaseName: any) => {
+    const dialogOpts = {
+        type: 'info',
+        buttons: ['OK'],
+        title: 'Application Update',
+        message: 'A new version is available',
+        detail: 'A new version is available. Do you want to update now?',
+    };
+
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+        if (returnValue.response === 0) {
+            console.log('update');
+            // autoUpdater.downloadUpdate();
+        }
+    });
 });
 
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
