@@ -5,10 +5,10 @@ import { environment } from './config/bast';
 
 let mainWindow: Electron.BrowserWindow | null;
 
-// const server = 'https://your-deployment-url.com';
-// const url = `${server}/update/${process.platform}/${app.getVersion()}`;
+const server = 'https://vercel.com/outsider987/gf-playwright';
+const url = `${server}/update/${process.platform}/${app.getVersion()}`;
 
-// autoUpdater.setFeedURL({ url });
+autoUpdater.setFeedURL({ url });
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();
@@ -48,7 +48,7 @@ async function createWindow() {
     });
     setInterval(() => {
         autoUpdater.checkForUpdates();
-    }, 60000);
+    }, 1000);
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
