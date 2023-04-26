@@ -23,7 +23,8 @@
         "appId": "robot",
         "productName": "robot",
         "directories": {
-            "output": "release"
+            "output": "release",
+            "buildResources": "build-assets"
         },
         "files": [
             "dist/**/*",
