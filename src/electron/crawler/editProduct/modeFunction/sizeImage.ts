@@ -21,9 +21,8 @@ export const startSizeImageProcess = async (editPage: Page, context: BrowserCont
     const headerSelector = '#title';
     const titleElement = await editPage.waitForSelector(headerSelector);
     const titleValue = await titleElement.inputValue();
-    const find = titleValue.match(/\【(.*?)\】/);
 
-    await saveSizeHtmlString(newTCinnerHtmlStr, titleValue, find[1]);
+    await saveSizeHtmlString(newTCinnerHtmlStr, titleValue, titleValue);
 };
 
 export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: string, code: any) => {

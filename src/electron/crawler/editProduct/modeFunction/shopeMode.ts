@@ -22,7 +22,8 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             await editPage.close();
             return false;
         }
-        const titleStr = (await titleElement.inputValue()).replace(/【(.*?)】/, '🌷').replace(/\d+$/, '');
+        const key = (await titleElement.inputValue()).match(/\【(.*?)\】/);
+        const titleStr = (await titleElement.inputValue()).replace(/【(.*?)】/, '🌷').replace(/\d+$/, key[1]);
         const skuNumber = (await titleElement.inputValue()).match(/【(.*?)】/)[1];
         await titleElement.fill(titleStr);
 
@@ -40,7 +41,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             const checkbox = await editPage.$(
                 'input[type="checkbox"][value="1535"] + span.checkboxName:has-text("韩风(Korean)")',
             );
-            if (checkbox && !(await checkbox.isEnabled())) await checkbox.click();
+            if (checkbox && !(await checkbox.isChecked())) await checkbox.click();
         }
 
         // money
@@ -69,7 +70,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             await input.fill('3');
         }
 
-        const destinationFile = `${__dirname}/../../config/output.xlsx`;
+        const destinationFile = `${__dirname}/../../config/廣州黃爭.xlsx`;
 
         let workbook = XLSX.readFile(destinationFile, { sheets: 'Sheet1' });
 
@@ -77,13 +78,14 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
 
         const textareas = await editPage.$('textarea');
 
-        if ((await textareas.inputValue()) !== '')
-            for (const json of jsons) {
-                const { 流水號, content } = json as any;
-                if (skuNumber === 流水號) {
-                    await textareas.fill(content);
-                }
+        for (const json of jsons) {
+            const { 流水號, content } = json as any;
+            const key = 流水號.match(/\【(.*?)\】/);
+            if (skuNumber === key[1]) {
+                await textareas.fill(content);
             }
+        }
+
         return true;
     } catch (error) {
         console.log(error);

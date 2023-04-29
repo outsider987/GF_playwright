@@ -5,10 +5,10 @@ import { environment } from './config/bast';
 
 let mainWindow: Electron.BrowserWindow | null;
 
-// const server = 'https://github.com/outsider987/GF_playwright';
-// const url = `${server}/update/${process.platform}/${app.getVersion()}`;
+const server = 'https://vercel.com/outsider987/hazel';
+const url = `${server}/update/${process.platform}/${app.getVersion()}`;
 
-// autoUpdater.setFeedURL({ url });
+autoUpdater.setFeedURL({ url });
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();

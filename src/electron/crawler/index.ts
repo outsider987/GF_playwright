@@ -107,4 +107,4 @@ export async function run(
         error.isRunning ? browser.close() : await run(args, abortSignal);
     }
 }
-// run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');
+run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');
