@@ -64,7 +64,7 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
             return result;
         } else {
             const spanTagList = newTCinnerHtmlStr
-                .match(/<p [^>]*>(.+?)<\/p>/g)
+                .match(/<p [^>]*>(.+?)<\/p>||<br>(.*?)<br>/g)
                 .map((str) => str.replace(/(<([^>]+)>|&nbsp;)/gi, ''));
 
             const sourceFile = `${__dirname}/../../config/template.xlsx`;
