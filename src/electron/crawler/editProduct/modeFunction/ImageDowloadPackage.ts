@@ -16,6 +16,7 @@ export const startDownloadImageProcess = async (editPage: Page, context: Browser
     const targetPath = `${exportPath.downloadImagePackage}/${titleValue}`;
 
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
+    await editPage.waitForSelector('.imgDivIn');
     const imageDivElements = await editPage.$$('.imgDivIn');
     const urls = [];
 
