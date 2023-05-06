@@ -43,8 +43,12 @@ export const openOnlineProduct = async (page: Page, context: BrowserContext, glo
         }
     }
 
-    const elementClick = await onlineProduct.$(`div.myj_tree_node[title="${globalState.subTarget}"]`);
-    await elementClick.click();
-    const response = await context.waitForEvent('response');
-    await Sleep(1000);
+    const elementClicks = await onlineProduct.$$(`div.myj_tree_node[title="${globalState.subTarget}"]`);
+    for (const elementClick of elementClicks) {
+        if (await elementClick.isVisible()) {
+            await elementClick.click();
+            const response = await context.waitForEvent('response');
+            await Sleep(1000);
+        }
+    }
 };

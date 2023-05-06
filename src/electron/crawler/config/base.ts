@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
-    mode: mode.sizeImage,
+    mode: mode.downloadImagePackage,
     isRunning: false,
-    target: '小米粒夏日',
-    subTarget: '20230501',
+    target: 'YS杭州',
+    subTarget: '20230503',
 };
 
 export const routineState = {
@@ -152,14 +152,14 @@ export const routineState = {
                 name: '使用機器人編號',
                 isLine: true,
                 type: 'checkbox',
-                value: true,
+                value: false,
                 isTextNumer: false,
             },
             SKU取代標題: {
                 name: 'SKU取代標題',
                 isLine: true,
                 type: 'checkbox',
-                value: false,
+                value: true,
                 isTextNumer: false,
             },
             前墬: {
@@ -180,7 +180,7 @@ export const routineState = {
                 name: '使用順序號',
                 isLine: true,
                 type: 'checkbox',
-                value: true,
+                value: false,
                 isTextNumer: false,
             },
             號碼: {
