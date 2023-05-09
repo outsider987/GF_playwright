@@ -27,8 +27,8 @@ export const globalState = {
     saveMode: false,
     mode: mode.sizeImage,
     isRunning: false,
-    target: '小米粒夏日',
-    subTarget: '20230508',
+    target: '',
+    subTarget: '',
 };
 
 export const routineState = {
