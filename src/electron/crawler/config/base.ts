@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
-    mode: mode.downloadImagePackage,
+    mode: mode.sizeImage,
     isRunning: false,
-    target: 'YS杭州',
-    subTarget: '20230503',
+    target: '小米粒夏日',
+    subTarget: '20230508',
 };
 
 export const routineState = {
