@@ -18,6 +18,10 @@ app.get('/update/:platform/:version', (req, res) => {
     }
 });
 
+app.get('/', (req, res) => {
+    res.json('hello world');
+});
+
 app.listen(3000, () => {
     console.log('Update server listening on port 3000');
 });
