@@ -76,6 +76,7 @@
     "dependencies": {
         "@electron-forge/cli": "^6.1.1",
         "@electron-forge/publisher-github": "^6.1.1",
+        "@now/node": "^1.8.5",
         "@techstark/opencv-js": "^4.7.0-release.1",
         "@tensorflow/tfjs": "^4.2.0",
         "@types/electron": "^1.6.10",
