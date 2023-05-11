@@ -48,7 +48,7 @@ async function createWindow() {
     });
     setInterval(() => {
         autoUpdater.checkForUpdates();
-    }, 1000);
+    }, 300000);
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
@@ -94,23 +94,38 @@ app.on('activate', function () {
     }
 });
 
-autoUpdater.on('update-available', (_event: any, _releaseNotes: any, _releaseName: any) => {
-    const dialogOpts = {
-        type: 'info',
-        buttons: ['OK'],
-        title: 'Application Update',
-        message: 'A new version is available',
-        detail: 'A new version is available. Do you want to update now?',
-    };
+// autoUpdater.on('update-available', (_event: any, _releaseNotes: any, _releaseName: any) => {
+//     console.log('update available');
+//     const dialogOpts = {
+//         type: 'info',
+//         buttons: ['OK'],
+//         title: 'Application Update',
+//         message: 'A new version is available',
+//         detail: 'A new version is available. Do you want to update now?',
+//     };
 
-    dialog.showMessageBox(dialogOpts).then((returnValue) => {
-        if (returnValue.response === 0) {
-            console.log('update');
-            // autoUpdater.downloadUpdate();
-        }
-    });
-});
+//     dialog.showMessageBox(dialogOpts).then((returnValue) => {
+//         if (returnValue.response === 0) {
+//             console.log('update');
+//             // autoUpdater.downloadUpdate();
+//         }
+//     });
+// });
 
+// autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+//     console.log('update downloaded');
+//     const dialogOpts = {
+//         type: 'info',
+//         buttons: ['Restart', 'Later'],
+//         title: 'Application Update',
+//         message: process.platform === 'win32' ? releaseNotes : releaseName,
+//         detail: 'A new version has been downloaded. Restart the application to apply the updates.',
+//     };
+
+//     dialog.showMessageBox(dialogOpts).then((returnValue) => {
+//         if (returnValue.response === 0) autoUpdater.quitAndInstall();
+//     });
+// });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
     const dialogOpts = {
         type: 'info',

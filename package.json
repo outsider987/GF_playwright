@@ -32,8 +32,16 @@
             "dist/**/*",
             "package.json"
         ],
+        "nsis": {
+            "oneClick": false,
+            "perMachine": false,
+            "allowToChangeInstallationDirectory": true
+        },
         "win": {
             "target": "nsis",
+            "publish": [
+                "github"
+            ],
             "icon": "src/electron/config/favicon.ico"
         },
         "mac": {
@@ -92,7 +100,7 @@
         "opencc-js": "^1.0.5",
         "opencv4nodejs-prebuilt-install": "^4.1.146",
         "playwright": "^1.32.2",
-        "sharp": "^0.32.0",
+        "sharp": "^0.32.1",
         "spacy": "^0.0.4",
         "tesseract.js": "^4.0.3",
         "tsconfig-paths": "^4.2.0",

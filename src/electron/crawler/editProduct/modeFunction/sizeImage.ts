@@ -147,7 +147,7 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         if (!text.split('').includes('尺') && !text.split('').includes('寸')) continue;
 
         // to get only had sensitive word
-        const fromImageTextJson = await csv().fromString(text);
+        const fromImageTextJson = await csv().fromString(text.replace('Qize information.-\n\n'));
         let row2 = '';
         let templateKey = [];
         for (const [index, imageTextObject] of Object.values(fromImageTextJson).entries()) {
