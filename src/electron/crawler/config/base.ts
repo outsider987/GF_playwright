@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
-    mode: mode.sizeImage,
+    mode: mode.downloadImagePackage,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: '廣州黃爭',
+    subTarget: '20230505',
 };
 
 export const routineState = {
