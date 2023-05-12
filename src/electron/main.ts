@@ -1,14 +1,27 @@
-import { app, autoUpdater, BrowserWindow, crashReporter, dialog, screen } from 'electron';
+import { app, BrowserWindow, crashReporter, dialog, screen } from 'electron';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/bast';
+import { autoUpdater } from 'electron-updater';
+
 // require('update-electron-app')();
 let mainWindow: Electron.BrowserWindow | null;
 
-const server = 'https://vercel.com/outsider987/hazel';
-const url = `${server}/update/${process.platform}/${app.getVersion()}`;
+// const server = 'https://vercel.com/outsider987/hazel';
+// const url = `${server}/update/${process.platform}/${app.getVersion()}`;
 
-autoUpdater.setFeedURL({ url });
+// autoUpdater.setFeedURL({ url });
+
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+
+autoUpdater.setFeedURL({
+    provider: 'github',
+    repo: 'GF_playwright',
+    owner: 'outsider987',
+    private: true,
+    token: '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',
+});
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();
@@ -95,7 +108,8 @@ app.on('activate', function () {
     }
 });
 
-autoUpdater.on('update-available', (_event: any, _releaseNotes: any, _releaseName: any) => {
+autoUpdater.on('update-available', (info) => {
+    console.log(info);
     console.log('update available');
     const dialogOpts = {
         type: 'info',
@@ -113,13 +127,13 @@ autoUpdater.on('update-available', (_event: any, _releaseNotes: any, _releaseNam
     });
 });
 
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+autoUpdater.on('update-downloaded', (infor) => {
     console.log('update downloaded');
     const dialogOpts = {
         type: 'info',
         buttons: ['Restart', 'Later'],
         title: 'Application Update',
-        message: process.platform === 'win32' ? releaseNotes : releaseName,
+        message: `${infor}`,
         detail: 'A new version has been downloaded. Restart the application to apply the updates.',
     };
 

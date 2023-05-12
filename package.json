@@ -67,10 +67,7 @@
         "provider": "github",
         "relaseType": "release"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/outsider987/GF_playwright.git"
-    },
+    "repository": "https://github.com/outsider987/GF_playwright",
     "keywords": [],
     "author": "",
     "license": "ISC",
