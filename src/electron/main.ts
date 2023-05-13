@@ -20,7 +20,7 @@ autoUpdater.setFeedURL({
     repo: 'GF_playwright',
     owner: 'outsider987',
     private: true,
-    token: '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',
+    token: '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',
 });
 
 async function createWindow() {
@@ -59,10 +59,7 @@ async function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-    setInterval(() => {
-        console.log('checking for updates');
-        autoUpdater.checkForUpdates();
-    }, 1000);
+    autoUpdater.checkForUpdates();
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
@@ -122,7 +119,7 @@ autoUpdater.on('update-available', (info) => {
     dialog.showMessageBox(dialogOpts).then((returnValue) => {
         if (returnValue.response === 0) {
             console.log('update');
-            // autoUpdater.downloadUpdate();
+            autoUpdater.downloadUpdate();
         }
     });
 });
