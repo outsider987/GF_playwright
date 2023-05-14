@@ -3,6 +3,7 @@ import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/bast';
 import { autoUpdater } from 'electron-updater';
+import { exec } from 'child_process';
 
 // require('update-electron-app')();
 let mainWindow: Electron.BrowserWindow | null;
@@ -44,6 +45,31 @@ async function createWindow() {
             sandbox: false,
         },
     });
+
+    if (process.platform === 'darwin') {
+        console.log('Running on macOS');
+        const shellScriptPath = '/mac/install-playwright.sh';
+
+        // Execute the shell script using the 'exec' function
+        const child = exec(`sh ${shellScriptPath}`);
+
+        // Capture the output of the shell script
+        child.stdout.on('data', (data) => {
+            console.log(`Script output: ${data}`);
+        });
+
+        // Capture any errors that occur during execution
+        child.stderr.on('data', (data) => {
+            console.error(`Script error: ${data}`);
+        });
+
+        // Execute a callback function when the script execution is complete
+        child.on('close', (code) => {
+            console.log(`Script execution complete with code ${code}`);
+        });
+    } else if (process.platform === 'win32') {
+        console.log('Running on Windows');
+    }
 
     // Load the Playwright page in the Electron window.
 
@@ -119,7 +145,8 @@ autoUpdater.on('update-available', (info) => {
     dialog.showMessageBox(dialogOpts).then((returnValue) => {
         if (returnValue.response === 0) {
             console.log('update');
-            autoUpdater.downloadUpdate();
+            autoUpdater.downloadUpdate().catch((err) => console.log(err));
+            console.log('updated');
         }
     });
 });
