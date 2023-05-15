@@ -4,6 +4,7 @@ import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/bast';
 import { autoUpdater } from 'electron-updater';
 import { exec } from 'child_process';
+import path from 'path';
 
 // require('update-electron-app')();
 let mainWindow: Electron.BrowserWindow | null;
@@ -48,10 +49,12 @@ async function createWindow() {
 
     if (process.platform === 'darwin') {
         console.log('Running on macOS');
-        const shellScriptPath = '/mac/install-playwright.sh';
+        const extraResourcesPath = path.join(__dirname, '../../', 'static', 'mac', 'install-playwright.sh');
+
+        console.log(extraResourcesPath);
 
         // Execute the shell script using the 'exec' function
-        const child = exec(`sh ${shellScriptPath}`);
+        const child = exec(`sh ${extraResourcesPath}`);
 
         // Capture the output of the shell script
         child.stdout.on('data', (data) => {
@@ -67,8 +70,36 @@ async function createWindow() {
         child.on('close', (code) => {
             console.log(`Script execution complete with code ${code}`);
         });
-    } else if (process.platform === 'win32') {
-        console.log('Running on Windows');
+    } else {
+        // const extraResourcesPath = path.join(app.getAppPath(), 'windows', 'install-playwright-with-nvm.bat');
+        const extraResourcesPath = path.join(
+            __dirname,
+            '../../',
+            'static',
+            'windows',
+            'install-playwright-with-nvm.bat',
+        );
+
+        console.log(extraResourcesPath);
+        const shellScriptPath = extraResourcesPath;
+        console.log(shellScriptPath);
+        // Execute the shell script using the 'exec' function
+        const child = exec(`${shellScriptPath}`);
+
+        // Capture the output of the shell script
+        child.stdout.on('data', (data) => {
+            console.log(`Script output: ${data}`);
+        });
+
+        // Capture any errors that occur during execution
+        child.stderr.on('data', (data) => {
+            console.error(`Script error: ${data}`);
+        });
+
+        // Execute a callback function when the script execution is complete
+        child.on('close', (code) => {
+            console.log(`Script execution complete with code ${code}`);
+        });
     }
 
     // Load the Playwright page in the Electron window.
