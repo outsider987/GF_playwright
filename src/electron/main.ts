@@ -49,7 +49,7 @@ async function createWindow() {
 
     if (process.platform === 'darwin') {
         console.log('Running on macOS');
-        const extraResourcesPath = path.join(__dirname, '../../', 'static', 'mac', 'install-playwright.sh');
+        const extraResourcesPath = path.join(__dirname, '../../', 'cmd', 'mac', 'install-playwright.sh');
 
         console.log(extraResourcesPath);
 
@@ -72,13 +72,7 @@ async function createWindow() {
         });
     } else {
         // const extraResourcesPath = path.join(app.getAppPath(), 'windows', 'install-playwright-with-nvm.bat');
-        const extraResourcesPath = path.join(
-            __dirname,
-            '../../',
-            'static',
-            'windows',
-            'install-playwright-with-nvm.bat',
-        );
+        const extraResourcesPath = path.join(__dirname, '../../', 'cmd', 'windows', 'install-playwright-with-nvm.bat');
 
         console.log(extraResourcesPath);
         const shellScriptPath = extraResourcesPath;

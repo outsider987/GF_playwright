@@ -45,8 +45,8 @@
             "category": "your.app.category"
         },
         "extraResources": {
-            "from": "./src/electron/static",
-            "to": "./static"
+            "from": "./src/electron/cmd",
+            "to": "./cmd"
         }
     },
     "config": {

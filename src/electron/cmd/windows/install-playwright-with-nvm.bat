@@ -11,20 +11,22 @@ IF %ERRORLEVEL% NEQ 0 (
     echo Successfully installed NVM.
 )
 
-echo Installing Node.js...
 
-nvm install node
+
+echo Installing Node 14...
+nvm install 14
+nvm use 14
 
 IF %ERRORLEVEL% NEQ 0 (
-    echo Failed to install Node.js.
+    echo Failed to install node 14 version.
     pause
 ) ELSE (
-    echo Successfully installed Node.js.
+    echo Successfully installed node 14 version.
 )
 
 echo Installing Playwright...
 
-npm install playwright
+npx playwright install 
 
 IF %ERRORLEVEL% NEQ 0 (
     echo Failed to install Playwright.
