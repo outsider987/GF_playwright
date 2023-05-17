@@ -26,7 +26,7 @@ IF %ERRORLEVEL% NEQ 0 (
 
 echo Installing Playwright...
 
-npx playwright install 
+npx playwright install
 
 IF %ERRORLEVEL% NEQ 0 (
     echo Failed to install Playwright.
