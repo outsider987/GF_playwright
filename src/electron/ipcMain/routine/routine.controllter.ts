@@ -1,7 +1,7 @@
 import { BrowserWindow, app, ipcMain } from 'electron';
 import { run } from '../../crawler';
 import fs from 'fs';
-import { configPath } from '../../config/bast';
+import { configPath } from '../../config/base';
 import { exportPath, routineState } from '../../crawler/config/base';
 import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {

@@ -5,7 +5,7 @@ import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
 import { globalState as globalConfigType, exportPath, routineState as initialRoutineStateType } from './config/base';
 import * as fs from 'fs';
-import { configPath } from '../config/bast';
+import { configPath } from '../config/base';
 import { app } from 'electron';
 import path from 'path';
 import { startShopeEditPage } from './editProduct/shopeEdit';

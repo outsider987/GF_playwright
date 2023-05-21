@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: false,
-    mode: mode.sizeImage,
+    mode: mode.routine,
     isRunning: false,
-    target: '小米粒夏日',
-    subTarget: '20230515',
+    target: '',
+    subTarget: '',
 };
 
 export const routineState = {

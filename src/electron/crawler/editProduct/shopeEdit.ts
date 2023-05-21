@@ -16,7 +16,7 @@ import { startSizeImageProcess } from './modeFunction/sizeImage';
 import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
 import { openOnlineProduct } from './filterHandle';
 import * as fs from 'fs';
-import { configPath } from '../../config/bast';
+import { configPath } from '../../config/base';
 import { startShopeMode } from './modeFunction/shopeMode';
 
 export async function startShopeEditPage(

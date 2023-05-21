@@ -1,7 +1,7 @@
 import { app, BrowserWindow, crashReporter, dialog, screen } from 'electron';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
-import { environment } from './config/bast';
+import { environment } from './config/base';
 import { autoUpdater } from 'electron-updater';
 import { exec } from 'child_process';
 import path from 'path';

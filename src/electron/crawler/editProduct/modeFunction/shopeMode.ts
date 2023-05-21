@@ -70,7 +70,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             await input.fill('3');
         }
 
-        const destinationFile = `${__dirname}/../../config/矽梦cim.xlsx`;
+        const destinationFile = `${__dirname}/../../config/小米粒夏日.xlsx`;
 
         let workbook = XLSX.readFile(destinationFile, { sheets: 'Sheet1' });
 

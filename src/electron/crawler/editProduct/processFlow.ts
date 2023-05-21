@@ -116,10 +116,10 @@ export async function setConstant(editPage: Page, config: configType) {
         const inputElement = await msrp.$('input');
         if (inputElement) await inputElement.fill(defaultMSRP);
     }
-    // for (const inventory of inventoryInputElementS) {
-    //     const inputElement = await inventory.$('input');
-    //     if (inputElement) await inputElement.fill(defaultInventory);
-    // }
+    for (const inventory of inventoryInputElementS) {
+        const inputElement = await inventory.$('input');
+        if (inputElement) await inputElement.fill(defaultInventory);
+    }
 
     if (!AliaRoute.includes(domainName)) {
         for (const weight of weightInputElementS) {
