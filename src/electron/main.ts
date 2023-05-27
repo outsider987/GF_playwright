@@ -21,8 +21,8 @@ autoUpdater.setFeedURL({
     provider: 'github',
     repo: 'GF_playwright',
     owner: 'outsider987',
-    private: true,
-    token: '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',
+    private: false,
+    token: process.env.GITHUB_TOKEN,
 });
 
 async function createWindow() {
