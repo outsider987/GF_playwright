@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ErrorDialog from '~/components/modals/ErrorDialog';
+import LoadingModal from '~/components/modals/Loading';
 import { store, selectGlobal } from '~/store';
 import { setAlertDialog } from '~/store/global';
 
@@ -13,6 +14,7 @@ const ModalsWrapper = (props: Props) => {
   const dispatch = useDispatch();
   return (
     <>
+      <LoadingModal titile={'loading'} toggle={globalSelector.loadingDialog.show} />
       <ErrorDialog
         toggle={globalSelector.alertDialog.show}
         msg={globalSelector.alertDialog.msg}

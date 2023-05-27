@@ -8,6 +8,9 @@ import Header from '~/layouts/Header';
 import { useGlobalContext } from '~/store/context/hooks/global/useGlobalStateHook';
 import { routes } from '~/router';
 import { useGlobalIPC } from '~/ipcRenderAPI/global';
+import { ipcRenderer } from 'electron';
+import { store } from '~/store';
+import { setLoadingDialog } from '~/store/global';
 const Main = () => {
   const { pathname } = useLocation();
   let contentContainer = pathname === '/profile' ? 'content_tags_container' : 'content_container';
@@ -16,6 +19,14 @@ const Main = () => {
   const IconSize = '20vw';
   const { globalState, setGlobalState } = useGlobalContext();
   const { INVOKE_GET_GLOBAL_STATE } = useGlobalIPC();
+
+  ipcRenderer.on('update-available', (event, line) => {
+    store.dispatch(setLoadingDialog({ show: true }));
+  });
+
+  ipcRenderer.on('update-available-close', (event, line) => {
+    store.dispatch(setLoadingDialog({ show: false }));
+  });
 
   useEffect(() => {
     console.log(pathname);

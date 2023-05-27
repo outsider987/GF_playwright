@@ -7,6 +7,9 @@ const initialState = {
     msg: '',
     title: 'error',
   },
+  loadingDialog: {
+    show: false,
+  },
 };
 
 export const globalSlice = createSlice({
@@ -19,10 +22,16 @@ export const globalSlice = createSlice({
 
       state.alertDialog = { ...alertDialog, show, msg, title };
     },
+    setLoadingDialog: (state, action: PayloadAction<typeof initialState.loadingDialog>) => {
+      const { loadingDialog } = state;
+      const { show } = action.payload;
+
+      state.loadingDialog = { ...loadingDialog, show };
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setAlertDialog } = globalSlice.actions;
+export const { setAlertDialog, setLoadingDialog } = globalSlice.actions;
 
 export default globalSlice.reducer;

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, crashReporter, dialog, screen } from 'electron';
+import { app, BrowserWindow, crashReporter, dialog, ipcMain, screen } from 'electron';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/base';
@@ -110,7 +110,9 @@ async function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-    autoUpdater.checkForUpdates();
+    autoUpdater.checkForUpdates().then((data) => {
+        console.log(data);
+    });
 }
 console.log(app.getPath('crashDumps'));
 crashReporter.start({ submitURL: '', uploadToServer: false });
@@ -159,35 +161,52 @@ app.on('activate', function () {
 autoUpdater.on('update-available', (info) => {
     console.log(info);
     console.log('update available');
-    const dialogOpts = {
-        type: 'info',
-        buttons: ['OK'],
-        title: 'Application Update',
-        message: 'A new version is available',
-        detail: 'A new version is available. Do you want to update now?',
-    };
+    if (process.platform === 'darwin') {
+        const dialogOpts = {
+            type: 'info',
+            buttons: ['OK'],
+            title: `新的版本${app.getVersion()}`,
+            message: `請手動下載${app.getVersion()}.dmg`,
+            detail: '下載後請手動安裝',
+        };
 
-    dialog.showMessageBox(dialogOpts).then((returnValue) => {
-        if (returnValue.response === 0) {
-            console.log('update');
-            autoUpdater.downloadUpdate().catch((err) => console.log(err));
-            console.log('updated');
-        }
-    });
+        dialog.showMessageBox(dialogOpts).then((returnValue) => {});
+        mainWindow.loadURL(`https://github.com/outsider987/GF_playwright/releases`);
+    } else {
+        mainWindow.webContents.send('update-available');
+        const dialogOpts = {
+            type: 'info',
+            buttons: ['OK'],
+            title: `新的版本${app.getVersion()}`,
+            message: '請等待更新完畢',
+            detail: '更新完後會有新的對話窗出現',
+        };
+
+        dialog.showMessageBox(dialogOpts).then((returnValue) => {
+            if (returnValue.response === 0) {
+                console.log('update');
+                autoUpdater.downloadUpdate().catch((err) => console.log(err));
+                console.log('updated');
+            }
+        });
+    }
 });
 
 autoUpdater.on('update-downloaded', (infor) => {
     console.log('update downloaded');
     const dialogOpts = {
         type: 'info',
-        buttons: ['Restart', 'Later'],
+        buttons: ['重新啟動'],
         title: 'Application Update',
         message: `${infor}`,
-        detail: 'A new version has been downloaded. Restart the application to apply the updates.',
+        detail: '以下載最新的版本,請按下重新啟動',
     };
 
     dialog.showMessageBox(dialogOpts).then((returnValue) => {
-        if (returnValue.response === 0) autoUpdater.quitAndInstall();
+        if (returnValue.response === 0) {
+            autoUpdater.quitAndInstall();
+            mainWindow.webContents.send('update-available-close');
+        }
     });
 });
 
