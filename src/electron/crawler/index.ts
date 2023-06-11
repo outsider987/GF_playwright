@@ -29,7 +29,7 @@ export async function run(
         // Set a random user agent string with each request
         // userAgent: await browser.userAgent(),
         // Emulate mouse and keyboard inputs to mimic human behavior
-        viewport: { width: 1920, height: 1080 },
+        // viewport: { width: 1920, height: 1080 },
         deviceScaleFactor: 1,
         hasTouch: false,
         isMobile: false,
@@ -107,7 +107,7 @@ export async function run(
         console.log('run error', error);
 
         if (context.pages().length === 0) return false;
-        await browser.close()
+        await browser.close();
         return false;
         // if (error.isRunning) {
         //     browser.close()
@@ -117,4 +117,4 @@ export async function run(
         //     return await run(args, abortSignal);
     }
 }
-// run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');
+run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');

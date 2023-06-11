@@ -12,7 +12,7 @@ brew install nvm
 
 echo export nvm path...
 export NVM_DIR="$HOME/.nvm" 
-. "/opt/homebrew/opt/nvm/nvm.sh"
+
 
 echo Installing stable Node.js...
 source ~/.bashrc
@@ -28,3 +28,14 @@ else
     echo Successfully installed Playwright.
     exit 0
 fi
+
+echo install playwright dependencies...
+npx playwright install 
+if [ $? -ne 0 ]; then
+    echo Failed to install Playwright dependencies.
+    exit 1
+else
+    echo Successfully installed Playwright dependencies.
+    exit 0
+fi
+```
