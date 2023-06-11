@@ -100,11 +100,21 @@ export async function run(
             ? await startShopeEditPage(page, context, { routineState, globalState })
             : await startEditPage(page, context, { routineState, globalState });
         await browser.close();
+
         console.log('end');
+        return true;
     } catch (error) {
         console.log('run error', error);
-        if (context.pages().length === 0) return;
-        error.isRunning ? browser.close() : await run(args, abortSignal);
+
+        if (context.pages().length === 0) return false;
+        await browser.close()
+        return false;
+        // if (error.isRunning) {
+        //     browser.close()
+        //     return false;
+        // }
+        // else
+        //     return await run(args, abortSignal);
     }
 }
 // run({ routineState: initialRoutineStateType, globalState: globalConfigType }, '');

@@ -6,11 +6,7 @@ import * as path from 'path';
 const currentDir = path.join(__dirname);
 
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
-    // ipcMain.handle('closeWindow', (event) => {
-    //     // const window = BrowserWindow.getFocusedWindow();
-    //     mainWindow.removeAllListeners('close');
-    //     mainWindow.close();
-    // });
+
     importAll(currentDir, mainWindow);
 };
 

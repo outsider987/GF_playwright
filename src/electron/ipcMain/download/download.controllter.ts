@@ -5,11 +5,11 @@ import { configPath } from '../../config/base';
 import { exportPath, routineState } from '../../crawler/config/base';
 import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
-    const saveConfigPath = `${configPath.stateConfig}/config.json`;
+    const saveConfigPath = `${configPath.stateConfig}/downLoadConfig.json`;
     const documentsPath = app.getPath('documents');
     const abortController = new AbortController();
 
-    ipcMain.on('routineStart', async (event, args) => {
+    ipcMain.on('downLoadStart', async (event, args) => {
         console.log('routine start ');
         const filePath = path.join(documentsPath, saveConfigPath);
         await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
@@ -17,18 +17,9 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
         mainWindow.webContents.send('rountineEnd', isSucess ? "成功編輯" : "中斷編輯");
     });
 
-    ipcMain.on('routineStop', async (event, args) => {
-        console.log('routine stop ');
 
-        const configState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
-        await fs.writeFileSync(
-            saveConfigPath,
-            JSON.stringify({ ...configState, globalState: { ...configState.globalState, isRunning: false } }),
-        );
-        abortController.abort();
-    });
 
-    ipcMain.handle('getRoutineState', async (event, args) => {
+    ipcMain.handle('getDownLoadState', async (event, args) => {
         if (await fs.existsSync(`${app.getPath('documents')}/${saveConfigPath}`)) {
             const oldState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
             if (hasNewKeys(oldState.routineState, args.routineState))

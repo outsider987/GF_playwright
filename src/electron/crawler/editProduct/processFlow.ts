@@ -64,8 +64,13 @@ export async function startProcessCodeFlow(
                 break;
             case 'I':
                 if (!config.routineState.I.enable) continue;
-                await handleError(async () => await removeDuplicateImageAndEnable(editPage), { code: 'I', config });
+                await handleError(async () => await removeDuplicateImageAndEnable(editPage, config), { code: 'I', config });
                 SKU += 'I';
+                break;
+            case 'O':
+                if (!config.routineState.O.enable) continue;
+                await handleError(async () => await SEOAutoFillIn(editPage), { code: 'O', config });
+                SKU += 'O';
                 break;
 
             default:
@@ -257,7 +262,7 @@ export async function setMoney(editPage: Page, config: configType) {
     const dollarRate = parseFloat(匯率.value);
     for (const price of priceInputElementS) {
         const inputElement = await price.$('input');
-        const value = parseInt(await inputElement?.inputValue());
+        const value = Math.round(parseInt(await inputElement?.inputValue()));
         if (inputElement)
             await inputElement.fill(String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)));
     }
@@ -329,23 +334,6 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
     const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
     let finalStr = '';
 
-    // trandition test
-    //     const traditionalRegex = /[\u4e00-\u9fff]+/g;
-    //     const templateRegex = /<div style="text-align: center;"><span>【尺 碼 信 息 x Size info】<\/span><\/div>/;
-
-    //     if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr)) {
-    //         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
-    //     } else finalStr = newTCinnerHtmlStr;
-
-    //     const result = `
-    //     <div style="text-align: center;">
-    //         <span>【尺 碼 信 息 x Size info】</span>
-    //     </div>
-    //     ${finalStr}
-    //     <div style="text-align: center;">
-    //         <span>【手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準</span>
-    //     </div>
-    //  `;
 
     const traditionalRegex = /[\u4e00-\u9fff]+/g;
     const templateRegex = new RegExp(
@@ -356,10 +344,10 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
     if (
         traditionalRegex.test(newTCinnerHtmlStr) &&
         !templateRegex.test(newTCinnerHtmlStr) &&
-        children.是否移除圖片.value
+        children.移除圖片.value
     ) {
         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
-    } else if (children.是否移除文字.value) finalStr = newTCinnerHtmlStr;
+    } else if (children.移除文字.value) finalStr = newTCinnerHtmlStr;
 
     const result = `
     <div style="text-align: center;">
@@ -377,7 +365,7 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
     console.log('newTCValue:', result);
 }
 
-export async function removeDuplicateImageAndEnable(editPage: Page) {
+export async function removeDuplicateImageAndEnable(editPage: Page, config: configType) {
     console.log('［I］ start process image');
     const showMoreBtn = await editPage.$('#showMoreImg');
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
@@ -386,24 +374,57 @@ export async function removeDuplicateImageAndEnable(editPage: Page) {
     const deleteBtns = await editPage.$$('.attach-icons.pull-right.yiImg');
     const urls = [];
 
-    for (const checkBox of checkBoxs) {
-        // const checkBox = await image.$('input[type="checkbox"][name="selectedImg"]');
-        if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden())) {
-            await checkBox.click();
-        }
-    }
-    for (const image of imageDivElements) {
-        const imageElement = await image.$('img');
-        if (imageElement) {
-            const url = await imageElement.getAttribute('src');
-            if (url) urls.push(url);
-        }
-    }
-    const images = await Promise.all(urls.map((url) => loadImage(url, 200)));
-    const { removedIndices } = await removeSimilarImages(images);
+    // checked all images
 
-    for (const index of removedIndices) {
-        await deleteBtns[index].click();
+    if (config.routineState.I.children.勾選所有圖片.value) {
+        for (const checkBox of checkBoxs) {
+
+            if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden())) {
+                await checkBox.click();
+            }
+        }
     }
+
+    // remove duplicate images
+    if (config.routineState.I.children.移除相同圖片.value) {
+        for (const image of imageDivElements) {
+            const imageElement = await image.$('img');
+            if (imageElement) {
+                const url = await imageElement.getAttribute('src');
+                if (url) urls.push(url);
+            }
+        }
+        const images = await Promise.all(urls.map((url) => loadImage(url, 200)));
+        const { removedIndices } = await removeSimilarImages(images);
+
+        for (const index of removedIndices) {
+            await deleteBtns[index].click();
+        }
+    }
+
+
     console.log('end process image');
+}
+
+export async function SEOAutoFillIn(editPage: Page,) {
+    console.log('［O］ start SEO autofill in');
+
+
+    const seoSpanElm = await editPage.waitForSelector('#seoSpan');
+    await seoSpanElm.click();
+
+    const headerSelector = '#title';
+    const titleElement = await editPage.waitForSelector(headerSelector);
+    const titleValue = await titleElement.inputValue();
+
+    const seoHeaderSelector = '#seoTitle';
+
+    const seoTitleElement = await editPage.waitForSelector(seoHeaderSelector);
+    await seoTitleElement.fill(titleValue);
+
+    const URLInputElm = await editPage.waitForSelector('#shopifyApiName');
+    const code = titleValue.match(/【[^【】]+】/g);
+    await URLInputElm.fill(code[0].replace(/【|】/g, ''));
+
+
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ErrorDialog from '~/components/modals/ErrorDialog';
+import ErrorDialog from '~/components/modals/PopUpDialog';
 import LoadingModal from '~/components/modals/Loading';
 import { store, selectGlobal } from '~/store';
 import { setAlertDialog } from '~/store/global';

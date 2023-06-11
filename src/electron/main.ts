@@ -150,9 +150,7 @@ app.on('window-all-closed', function () {
 });
 
 app.on('activate', function () {
-    // On macOS it's common to re-create a window in the
-    // app when the dock icon is clicked and there are no
-    // other windows open.
+
     if (mainWindow === null) {
         createWindow();
     }
@@ -170,7 +168,7 @@ autoUpdater.on('update-available', (info) => {
             detail: '下載後請手動安裝',
         };
 
-        dialog.showMessageBox(dialogOpts).then((returnValue) => {});
+        dialog.showMessageBox(dialogOpts).then((returnValue) => { });
         mainWindow.loadURL(`https://github.com/outsider987/GF_playwright/releases`);
     } else {
         mainWindow.webContents.send('update-available');

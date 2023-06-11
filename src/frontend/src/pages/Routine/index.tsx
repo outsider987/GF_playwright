@@ -80,14 +80,14 @@ const Routine = () => {
           <div key={index1}>
             <div className="flex flex-row items-center justify-center space-x-3">
               <CheckBox checked={item.enable} onChange={handleChange} name={item.code}></CheckBox>
-              <span className="flex">{state[index1].name}</span>
+              <span className="flex">{state[index1].text}</span>
             </div>
             <div className={`grid grid-cols-3 gap-4 ${item.enable ? '' : 'hidden'}`}>
               {item.children &&
                 Object.values(item.children).map((child, index) => {
                   return (
                     <div key={child.name} className={filedCssClass(child.isLine, child.type)}>
-                      <span className="flex w-auto">{child.name}</span>
+                      <span className="flex w-auto">{child.text}</span>
                       <Filed
                         name={Object.values(state[index1].children)[index].name}
                         type={child.type as any}

@@ -70,14 +70,14 @@ export async function startEditPage(
                             break;
                         }
                     }
-                    const regex = /[BCMSITF]+/; // Matches any characters between 【 and 】
+                    const regex = /[BCMSITOF]+/; // Matches any characters between 【 and 】
 
                     // check title is match 【】
                     const matches = inputValue.match(regex);
                     if (matches) {
                         let code = matches[0].replace(/【|】|\d/g, '');
 
-                        code = code.replace(/[^BCMSITF]*/g, '');
+                        code = code.replace(/[^BCMSITOF]*/g, '');
                         // if we leak some code, we need to run F at final
                         if (code.length > 0) {
                             code.replace('F', '');
