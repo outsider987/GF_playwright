@@ -262,7 +262,7 @@ export async function setMoney(editPage: Page, config: configType) {
     const dollarRate = parseFloat(匯率.value);
     for (const price of priceInputElementS) {
         const inputElement = await price.$('input');
-        const value = Math.round(parseInt(await inputElement?.inputValue()));
+        const value = Math.round(parseInt(await inputElement?.inputValue()) / 10) * 10;
         if (inputElement)
             await inputElement.fill(String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)));
     }
