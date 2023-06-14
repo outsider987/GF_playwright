@@ -8,18 +8,10 @@ export const initialRoutineState = {
   },
   C: {
     code: 'C',
-    name: 'MSRP-庫存-重量',
-    text: 'MSRP-庫存-重量',
+    name: '庫存-重量',
+    text: '庫存-重量',
     enable: true,
     children: {
-      MSRP: {
-        name: 'MSRP',
-        text: 'MSRP',
-        isLine: false,
-        type: 'input',
-        value: '3000',
-        isTextNumer: true,
-      },
       庫存: {
         name: '庫存',
         text: '庫存',

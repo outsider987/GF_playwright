@@ -41,18 +41,10 @@ export const routineState = {
     },
     C: {
         code: 'C',
-        name: 'MSRP-庫存-重量',
-        text: 'MSRP-庫存-重量',
+        name: '庫存-重量',
+        text: '庫存-重量',
         enable: true,
         children: {
-            MSRP: {
-                name: 'MSRP',
-                text: 'MSRP',
-                isLine: false,
-                type: 'input',
-                value: '3000',
-                isTextNumer: true,
-            },
             庫存: {
                 name: '庫存',
                 text: '庫存',
@@ -110,7 +102,6 @@ export const routineState = {
         text: '產品描述 編輯 (前墜 + 編輯內容 + 後墜)',
         enable: true,
         children: {
-
             移除圖片: {
                 name: '移除圖片',
                 text: '移除圖片',
@@ -167,9 +158,8 @@ export const routineState = {
                 type: 'checkbox',
                 value: true,
                 isTextNumer: false,
-            }
+            },
         },
-
     },
     B: {
         code: 'B',
@@ -240,10 +230,6 @@ export const routineState = {
         name: 'SEO',
         text: 'SEO自動填入',
         enable: true,
-        children: {
-
-        }
-
-
-    }
+        children: {},
+    },
 };

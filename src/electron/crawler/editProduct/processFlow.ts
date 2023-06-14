@@ -64,7 +64,10 @@ export async function startProcessCodeFlow(
                 break;
             case 'I':
                 if (!config.routineState.I.enable) continue;
-                await handleError(async () => await removeDuplicateImageAndEnable(editPage, config), { code: 'I', config });
+                await handleError(async () => await removeDuplicateImageAndEnable(editPage, config), {
+                    code: 'I',
+                    config,
+                });
                 SKU += 'I';
                 break;
             case 'O':
@@ -106,21 +109,16 @@ export async function translateTitle(editPage: Page) {
 }
 
 export async function setConstant(editPage: Page, config: configType) {
-    const defaultMSRP = config.routineState.C.children.MSRP.value;
     const defaultInventory = config.routineState.C.children.庫存.value;
     const defaultWeight = config.routineState.C.children.重量.value;
 
     const domainName = await getCurrentDoman(editPage);
 
     const tBody = await editPage.waitForSelector('#shopifySkuAdd');
-    const msrpInputElementS = await editPage.$$('[data-name="msrp"]');
+
     const inventoryInputElementS = await editPage.$$('[data-name="inventory"]');
     const weightInputElementS = await editPage.$$('[data-name="weight"]');
 
-    for (const msrp of msrpInputElementS) {
-        const inputElement = await msrp.$('input');
-        if (inputElement) await inputElement.fill(defaultMSRP);
-    }
     for (const inventory of inventoryInputElementS) {
         const inputElement = await inventory.$('input');
         if (inputElement) await inputElement.fill(defaultInventory);
@@ -256,15 +254,27 @@ export async function setMoney(editPage: Page, config: configType) {
 
     const tBody = await editPage.waitForSelector('[data-name="price"]');
     const priceInputElementS = await editPage.$$('[data-name="price"]');
+    const msrpInputElementS = await editPage.$$('[data-name="msrp"]');
     // const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
-
+    let newValue = '';
     const { 匯率, 另加, 運費 } = config.routineState.M.children;
     const dollarRate = parseFloat(匯率.value);
-    for (const price of priceInputElementS) {
+    for (const [index, price] of priceInputElementS.entries()) {
         const inputElement = await price.$('input');
         const value = Math.round(parseInt(await inputElement?.inputValue()) / 10) * 10;
-        if (inputElement)
-            await inputElement.fill(String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)));
+
+        if (inputElement) {
+            // const msrpInputElement = await msrpInputElementS[index].$('input');
+            newValue = String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value));
+
+            await inputElement.fill(newValue);
+        }
+    }
+    for (const msrp of msrpInputElementS) {
+        const inputElement = await msrp.$('input');
+        if (inputElement) {
+            await inputElement.fill(newValue);
+        }
     }
 }
 
@@ -334,18 +344,13 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
     const newTCinnerHtmlStr = await convertToTraditionalChinese(await bodyElement?.innerHTML());
     let finalStr = '';
 
-
     const traditionalRegex = /[\u4e00-\u9fff]+/g;
     const templateRegex = new RegExp(
         `<div style="text-align: center;"><span>${config.routineState.S.children.前墬.value}<\/span><\/div>`,
     );
     const { children } = config.routineState.S;
 
-    if (
-        traditionalRegex.test(newTCinnerHtmlStr) &&
-        !templateRegex.test(newTCinnerHtmlStr) &&
-        children.移除圖片.value
-    ) {
+    if (traditionalRegex.test(newTCinnerHtmlStr) && !templateRegex.test(newTCinnerHtmlStr) && children.移除圖片.value) {
         finalStr = newTCinnerHtmlStr.replace(/<img[^>]*>/g, '');
     } else if (children.移除文字.value) finalStr = newTCinnerHtmlStr;
 
@@ -378,7 +383,6 @@ export async function removeDuplicateImageAndEnable(editPage: Page, config: conf
 
     if (config.routineState.I.children.勾選所有圖片.value) {
         for (const checkBox of checkBoxs) {
-
             if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden())) {
                 await checkBox.click();
             }
@@ -402,13 +406,11 @@ export async function removeDuplicateImageAndEnable(editPage: Page, config: conf
         }
     }
 
-
     console.log('end process image');
 }
 
-export async function SEOAutoFillIn(editPage: Page,) {
+export async function SEOAutoFillIn(editPage: Page) {
     console.log('［O］ start SEO autofill in');
-
 
     const seoSpanElm = await editPage.waitForSelector('#seoSpan');
     await seoSpanElm.click();
@@ -425,6 +427,4 @@ export async function SEOAutoFillIn(editPage: Page,) {
     const URLInputElm = await editPage.waitForSelector('#shopifyApiName');
     const code = titleValue.match(/【[^【】]+】/g);
     await URLInputElm.fill(code[0].replace(/【|】/g, ''));
-
-
 }
