@@ -1,29 +1,29 @@
-import { Browser, BrowserContext, Page } from 'playwright';
+import { BrowserContext, Page } from 'playwright';
 import { handleClodeModal, handleGoToPage } from '../utils/handler';
-import { convertToTraditionalChinese, Sleep } from '../utils/utils';
-import moment from 'moment';
 import {
     globalState as Config,
     defaultCode,
     routineState,
     mode,
     globalState as globalConfigType,
-    globalState,
+    downloadState as downloadStateType,
 } from '../config/base';
 import { startProcessCodeFlow } from './processFlow';
-import { WordTokenizer } from 'natural';
 import { startSizeImageProcess } from './modeFunction/sizeImage';
 import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
 import { openOnlineProduct } from './filterHandle';
-import * as fs from 'fs';
-import { configPath } from '../../config/base';
 import { startShopeMode } from './modeFunction/shopeMode';
-let currentEditIndex = 0;
+
 export async function startEditPage(
     page: Page,
     context: BrowserContext,
-    config: { globalState: typeof globalConfigType; routineState: typeof routineState },
+    config: {
+        globalState: typeof globalConfigType;
+        routineState: typeof routineState;
+        downloadState: typeof downloadStateType;
+    },
 ) {
+    let currentEditIndex = 0;
     try {
         const tBodySelector = '#shopifySysMsg';
         const headerSelector = '#title';
@@ -108,7 +108,7 @@ export async function startEditPage(
                     break;
 
                 case mode.downloadImagePackage:
-                    await startDownloadImageProcess(editPage, context);
+                    await startDownloadImageProcess(editPage, context, config.downloadState);
                     currentEditIndex++;
                     await editPage.close();
                     continue;

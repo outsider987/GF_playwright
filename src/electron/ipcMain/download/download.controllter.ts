@@ -5,21 +5,20 @@ import { configPath } from '../../config/base';
 import { exportPath, routineState } from '../../crawler/config/base';
 import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
-    const saveConfigPath = `${configPath.stateConfig}/downLoadConfig.json`;
+    const saveConfigPath = `${configPath.stateConfig}/config.json`;
     const documentsPath = app.getPath('documents');
     const abortController = new AbortController();
 
     ipcMain.on('downLoadStart', async (event, args) => {
         console.log('routine start ');
         const filePath = path.join(documentsPath, saveConfigPath);
+        const overWrite = {};
         await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
         const isSucess = await run({ ...args }, abortController.signal);
-        mainWindow.webContents.send('rountineEnd', isSucess ? "成功編輯" : "中斷編輯");
+        mainWindow.webContents.send('rountineEnd', isSucess ? '成功下載' : '中斷下載');
     });
 
-
-
-    ipcMain.handle('getDownLoadState', async (event, args) => {
+    ipcMain.handle('getdownloadState', async (event, args) => {
         if (await fs.existsSync(`${app.getPath('documents')}/${saveConfigPath}`)) {
             const oldState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
             if (hasNewKeys(oldState.routineState, args.routineState))
@@ -28,8 +27,6 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
             await fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: oldState.routineState }));
             return oldState.routineState;
         } else {
-
-
             const filePath = path.join(documentsPath, saveConfigPath);
             const dirPath = path.join(documentsPath, configPath.stateConfig);
             console.log(dirPath);

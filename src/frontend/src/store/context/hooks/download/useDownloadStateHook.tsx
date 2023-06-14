@@ -1,18 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { initialDownLoadState } from './initialState';
+import { initialdownloadState } from './initialState';
 
 const state = {
-  downLoadState: initialDownLoadState,
-  setDownLoadState: (value: typeof initialDownLoadState) => { },
+  downloadState: initialdownloadState,
+  setdownloadState: (value: typeof initialdownloadState) => {},
 };
 
 export const DownLoadContext = createContext<typeof state>(state);
 
 const DownLoadProvider = ({ children }) => {
-  const [downLoadState, setDownLoadState] = useState<typeof initialDownLoadState>(initialDownLoadState);
+  const [downloadState, setdownloadState] = useState<typeof initialdownloadState>(initialdownloadState);
 
-  return <DownLoadContext.Provider value={{ downLoadState, setDownLoadState }}>{children}</DownLoadContext.Provider>;
+  return <DownLoadContext.Provider value={{ downloadState, setdownloadState }}>{children}</DownLoadContext.Provider>;
 };
 
 export const useDowonloadContext = () => useContext(DownLoadContext);

@@ -3,7 +3,12 @@ import { chromium, Browser, Page, firefox, webkit } from 'playwright';
 
 import { startEditPage } from './editProduct';
 import { handleClodeModal, handleGoToPage } from './utils/handler';
-import { globalState as globalConfigType, exportPath, routineState as initialRoutineStateType } from './config/base';
+import {
+    globalState as globalConfigType,
+    exportPath,
+    routineState as initialRoutineStateType,
+    downloadState as downloadStateType,
+} from './config/base';
 import * as fs from 'fs';
 import { configPath } from '../config/base';
 import { app } from 'electron';
@@ -12,11 +17,15 @@ import { startShopeEditPage } from './editProduct/shopeEdit';
 
 // dotenv.config();
 export async function run(
-    args: { routineState: typeof initialRoutineStateType; globalState: typeof globalConfigType },
+    args: {
+        routineState: typeof initialRoutineStateType;
+        globalState: typeof globalConfigType;
+        downloadState: typeof downloadStateType;
+    },
     abortSignal: any,
 ) {
     const { ACCOUNT, PASSWORD } = process.env;
-    const { routineState, globalState } = args;
+    const { routineState, globalState, downloadState } = args;
     console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD} \n 
     mode ${globalState.mode}
     `);
@@ -98,7 +107,7 @@ export async function run(
 
         isShope
             ? await startShopeEditPage(page, context, { routineState, globalState })
-            : await startEditPage(page, context, { routineState, globalState });
+            : await startEditPage(page, context, { routineState, globalState, downloadState });
         await browser.close();
 
         console.log('end');

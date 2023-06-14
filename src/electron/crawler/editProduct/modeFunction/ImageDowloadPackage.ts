@@ -1,18 +1,34 @@
 import { BrowserContext, Page } from 'playwright';
-import { downloadImage, loadImage } from '../../utils/image';
+import { downloadImage } from '../../utils/image';
 import * as fs from 'fs';
 import { exportPath } from '../../config/base';
-import axios from 'axios';
-import { config } from 'process';
 import { app } from 'electron';
 import path from 'path';
+import { downloadState as downloadStateType } from '../../config/base';
 
-export const startDownloadImageProcess = async (editPage: Page, context: BrowserContext) => {
+export const startDownloadImageProcess = async (
+    editPage: Page,
+    context: BrowserContext,
+    downloadState: typeof downloadStateType,
+) => {
     console.log('start download image process');
+
+    let titleValue = 'Edit';
     const showMoreBtn = await editPage.$('#showMoreImg');
-    const headerSelector = '#title';
-    const titleElement = await editPage.waitForSelector(headerSelector);
-    const titleValue = await titleElement.inputValue();
+
+    // here is change title value
+    if (downloadState.isSEOCode.enable) {
+        const seoSpanElm = await editPage.waitForSelector('#seoSpan');
+        await seoSpanElm.click();
+
+        const URLInputElm = await editPage.waitForSelector('#shopifyApiName');
+        titleValue = await URLInputElm.inputValue();
+    } else {
+        const headerSelector = '#title';
+        const titleElement = await editPage.waitForSelector(headerSelector);
+        titleValue = await titleElement.inputValue();
+    }
+
     const targetPath = `${exportPath.downloadImagePackage}/${titleValue}`;
 
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
