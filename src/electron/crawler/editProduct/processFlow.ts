@@ -261,11 +261,13 @@ export async function setMoney(editPage: Page, config: configType) {
     const dollarRate = parseFloat(匯率.value);
     for (const [index, price] of priceInputElementS.entries()) {
         const inputElement = await price.$('input');
-        const value = Math.round(parseInt(await inputElement?.inputValue()) / 10) * 10;
 
         if (inputElement) {
             // const msrpInputElement = await msrpInputElementS[index].$('input');
-            newValue = String((value + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value));
+            const baseValue = parseInt(await inputElement?.inputValue());
+            const value =
+                Math.round(((baseValue + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)) / 10) * 10;
+            newValue = String(value);
 
             await inputElement.fill(newValue);
         }
