@@ -1,4 +1,4 @@
-import { app, BrowserWindow, crashReporter, dialog, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, crashReporter, dialog, ipcMain, screen, shell } from 'electron';
 import { chromium } from 'playwright';
 import { RegisterFrontendEvents } from './ipcMain';
 import { environment } from './config/base';
@@ -6,7 +6,6 @@ import { autoUpdater } from 'electron-updater';
 import { exec } from 'child_process';
 import path from 'path';
 
-// require('update-electron-app')();
 let mainWindow: Electron.BrowserWindow | null;
 
 // const server = 'https://vercel.com/outsider987/hazel';
@@ -131,26 +130,19 @@ environment.production && app.commandLine.appendSwitch('no-sandbox');
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 
-// Quit when all windows are closed, except on macOS.
-// There, it's common for applications and their menu bar
-// to stay active until the user quits explicitly with Cmd + Q.
-app.on('before-quit', () => {
-    try {
-        const window = BrowserWindow.getFocusedWindow();
-        window.close();
-    } catch (error) {
-        console.log(error);
-    }
-});
+// app.on('before-quit', () => {
+//     try {
+//         mainWindow.close();
+//     } catch (error) {
+//         console.log(error);
+//     }
+// });
 
 app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    app.quit();
 });
 
 app.on('activate', function () {
-
     if (mainWindow === null) {
         createWindow();
     }
@@ -164,12 +156,15 @@ autoUpdater.on('update-available', (info) => {
             type: 'info',
             buttons: ['OK'],
             title: `新的版本${app.getVersion()}`,
-            message: `請手動下載${app.getVersion()}.dmg`,
+            message: `請手動下載${app.getVersion()}.dmg , 下載完畢請到下載項目手動更新`,
             detail: '下載後請手動安裝',
         };
 
-        dialog.showMessageBox(dialogOpts).then((returnValue) => { });
-        mainWindow.loadURL(`https://github.com/outsider987/GF_playwright/releases`);
+        dialog.showMessageBox(dialogOpts).then((returnValue) => {});
+
+        shell.openExternal(
+            `https://github.com/outsider987/GF_playwright/releases/download/v${app.getVersion()}/robot-${app.getVersion()}.dmg`,
+        );
     } else {
         mainWindow.webContents.send('update-available');
         const dialogOpts = {
@@ -207,21 +202,6 @@ autoUpdater.on('update-downloaded', (infor) => {
         }
     });
 });
-
-// autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-//     console.log('update downloaded');
-//     const dialogOpts = {
-//         type: 'info',
-//         buttons: ['Restart', 'Later'],
-//         title: 'Application Update',
-//         message: process.platform === 'win32' ? releaseNotes : releaseName,
-//         detail: 'A new version has been downloaded. Restart the application to apply the updates.',
-//     };
-
-//     dialog.showMessageBox(dialogOpts).then((returnValue) => {
-//         if (returnValue.response === 0) autoUpdater.quitAndInstall();
-//     });
-// });
 
 autoUpdater.on('error', (message) => {
     console.error('There was a problem updating the application');
