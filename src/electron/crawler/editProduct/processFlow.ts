@@ -263,21 +263,22 @@ export async function setMoney(editPage: Page, config: configType) {
         const inputElement = await price.$('input');
 
         if (inputElement) {
-            // const msrpInputElement = await msrpInputElementS[index].$('input');
+            const msrpInputElement = await msrpInputElementS[index - 1].$('input');
             const baseValue = parseInt(await inputElement?.inputValue());
             const value =
                 Math.round(((baseValue + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)) / 10) * 10;
             newValue = String(value);
 
             await inputElement.fill(newValue);
+            if (msrpInputElement) await msrpInputElement.fill(newValue);
         }
     }
-    for (const msrp of msrpInputElementS) {
-        const inputElement = await msrp.$('input');
-        if (inputElement) {
-            await inputElement.fill(newValue);
-        }
-    }
+    // for (const msrp of msrpInputElementS) {
+    //     const inputElement = await msrp.$('input');
+    //     if (inputElement) {
+    //         await inputElement.fill(newValue);
+    //     }
+    // }
 }
 
 export async function setNameTitle(editPage: Page, SKU: string, config: configType) {
