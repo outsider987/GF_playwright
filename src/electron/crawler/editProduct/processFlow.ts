@@ -264,7 +264,7 @@ export async function setMoney(editPage: Page, config: configType) {
 
         if (inputElement) {
             const msrpInputElement = await msrpInputElementS[index - 1].$('input');
-            const baseValue = parseInt(await inputElement?.inputValue());
+            const baseValue = parseFloat(await inputElement?.inputValue());
             const value =
                 Math.round(((baseValue + parseFloat(運費.value)) * dollarRate * 2 + parseFloat(另加.value)) / 10) * 10;
             newValue = String(value);
