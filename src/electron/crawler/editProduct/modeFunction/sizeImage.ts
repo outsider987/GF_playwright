@@ -6,6 +6,7 @@ import { recognizeImage } from '../../utils/image';
 import { exportPath } from '../../config/base';
 import fs from 'fs';
 import csv from 'csvtojson';
+import { conditionalGrapSize, finalCheckSenstitiveCgaracter } from '../../utils/sizeImage';
 
 export const startSizeImageProcess = async (editPage: Page, context: BrowserContext, collectDatas: any[]) => {
     const sizeFrameSelector = '#cke_1_contents';
@@ -147,26 +148,30 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         if (!text.split('').includes('尺') && !text.split('').includes('寸')) continue;
 
         // to get only had sensitive word
-        const fromImageTextJson = await csv().fromString(text.replace('Qize information.-\n\n'));
+        const fromImageTextJson = await csv().fromString(
+            text.replace(/Qize information.-\n\n|Qize information./g, '').replace(/“|”|。/g, ''),
+        );
         let row2 = '';
         let templateKey = [];
         for (const [index, imageTextObject] of Object.values(fromImageTextJson).entries()) {
             const imageText = Object.values(imageTextObject)[0] as any;
-            if (imageText.split('').includes('尺') && imageText.split('').includes('圍')) {
+
+            // header key
+            if (conditionalGrapSize(imageText)) {
                 const imageTextArray = imageText.split(/\s+/gm);
                 templateKey = imageTextArray;
-                // row2 = imageTextArray.join(' ');
-                // row2 += '\n';
-            } else if (imageText.match(/(?=.*\d)[\u4E00-\u9FFFa-zA-Z0-9]{0,5}/g)) {
+            }
+            // row data
+            else if (imageText.match(/(?=.*\d)[\u4E00-\u9FFFa-zA-Z0-9]{0,5}/g)) {
                 const tempstring = Object.values(imageTextObject)[0] as any;
                 const newTempString = templateKey.map(
                     (key: any, index: any) => `${key} ${tempstring.split(/\s+/)[index]}`,
                 );
                 row2 += newTempString.join(' ') + '\n';
-                // row2 = row2.replace(/\s+/g, '');
             }
         }
-        if (!row2.split('').includes('尺')) continue;
+        // finnal check row data is expected
+        if (!finalCheckSenstitiveCgaracter(row2.split(''))) continue;
         const combineResult = `【尺 碼 信 息 x Size info】\n${row2}\n手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準`;
         rowDatas.push([code, combineResult]);
 
