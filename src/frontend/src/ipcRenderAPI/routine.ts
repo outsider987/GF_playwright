@@ -19,5 +19,10 @@ export const useRoutineAPI = () => {
     return res;
   };
 
-  return { SEND_ROUTINE_START, INVOKE_GET_ROUTINE_STATE, SEND_ROUTINE_STOP };
+  const INVOKE_SAVE_ROUTINE_STATE = async (routineState, name) => {
+    const res = await ipcRenderer.invoke('saveRoutineState', { ...routineState, name }).catch((e) => console.log(e));
+    return res;
+  };
+
+  return { SEND_ROUTINE_START, INVOKE_GET_ROUTINE_STATE, SEND_ROUTINE_STOP, INVOKE_SAVE_ROUTINE_STATE };
 };

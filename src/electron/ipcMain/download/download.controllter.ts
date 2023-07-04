@@ -7,34 +7,18 @@ import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     const saveConfigPath = `${configPath.stateConfig}/config.json`;
     const documentsPath = app.getPath('documents');
-    const abortController = new AbortController();
+    const statePath = path.join(documentsPath, saveConfigPath);
 
     ipcMain.on('downLoadStart', async (event, args) => {
         console.log('routine start ');
-        const filePath = path.join(documentsPath, saveConfigPath);
+
         const overWrite = {};
-        await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
-        const isSucess = await run({ ...args }, abortController.signal);
+        await fs.writeFileSync(statePath, JSON.stringify({ ...args }));
+        const isSucess = await run({ ...args });
         mainWindow.webContents.send('rountineEnd', isSucess ? '成功下載' : '中斷下載');
     });
 
-    ipcMain.handle('getdownloadState', async (event, args) => {
-        if (await fs.existsSync(`${app.getPath('documents')}/${saveConfigPath}`)) {
-            const oldState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
-            if (hasNewKeys(oldState.routineState, args.routineState))
-                updateObject(oldState.routineState, args.routineState);
-
-            await fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: oldState.routineState }));
-            return oldState.routineState;
-        } else {
-            const filePath = path.join(documentsPath, saveConfigPath);
-            const dirPath = path.join(documentsPath, configPath.stateConfig);
-            console.log(dirPath);
-            fs.mkdirSync(dirPath, { recursive: true });
-            await fs.writeFileSync(filePath, JSON.stringify({ routineState: args.routineState }));
-            return args.routineState;
-        }
-    });
+    ipcMain.handle('getdownloadState', async (event, args) => {});
 };
 function updateObject(originalObj: any, modifiedObj: any) {
     for (const key of Object.keys(modifiedObj)) {

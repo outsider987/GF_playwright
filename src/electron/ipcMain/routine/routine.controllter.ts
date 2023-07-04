@@ -6,15 +6,16 @@ import { exportPath, routineState } from '../../crawler/config/base';
 import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     const saveConfigPath = `${configPath.stateConfig}/config.json`;
+    const routineSettingPath = `${configPath.stateConfig}/routineSetting.json`;
     const documentsPath = app.getPath('documents');
-    const abortController = new AbortController();
+    const statePath = path.join(documentsPath, saveConfigPath);
 
     ipcMain.on('routineStart', async (event, args) => {
         console.log('routine start ');
-        const filePath = path.join(documentsPath, saveConfigPath);
-        await fs.writeFileSync(filePath, JSON.stringify({ ...args }));
-        const isSucess = await run({ ...args }, abortController.signal);
-        mainWindow.webContents.send('rountineEnd', isSucess ? "成功編輯" : "中斷編輯");
+
+        await fs.writeFileSync(statePath, JSON.stringify({ ...args }));
+        const isSucess = await run({ ...args });
+        mainWindow.webContents.send('rountineEnd', isSucess ? '成功編輯' : '中斷編輯');
     });
 
     ipcMain.on('routineStop', async (event, args) => {
@@ -25,27 +26,16 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
             saveConfigPath,
             JSON.stringify({ ...configState, globalState: { ...configState.globalState, isRunning: false } }),
         );
-        abortController.abort();
     });
 
-    ipcMain.handle('getRoutineState', async (event, args) => {
-        if (await fs.existsSync(`${app.getPath('documents')}/${saveConfigPath}`)) {
-            const oldState = JSON.parse(fs.readFileSync(saveConfigPath, 'utf8'));
-            if (hasNewKeys(oldState.routineState, args.routineState))
-                updateObject(oldState.routineState, args.routineState);
+    ipcMain.handle('getRoutineState', async (event, args) => {});
 
-            await fs.writeFileSync(saveConfigPath, JSON.stringify({ routineState: oldState.routineState }));
-            return oldState.routineState;
-        } else {
-
-
-            const filePath = path.join(documentsPath, saveConfigPath);
-            const dirPath = path.join(documentsPath, configPath.stateConfig);
-            console.log(dirPath);
-            fs.mkdirSync(dirPath, { recursive: true });
-            await fs.writeFileSync(filePath, JSON.stringify({ routineState: args.routineState }));
-            return args.routineState;
-        }
+    ipcMain.handle('saveRoutineState', async (event, args) => {
+        !fs.existsSync(configPath.stateConfig) && fs.mkdirSync(configPath.stateConfig);
+        !fs.existsSync(routineSettingPath) && fs.writeFileSync(routineSettingPath, JSON.stringify({ routine: [] }));
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        routineSetting.routine.push(args);
+        fs.writeFileSync(routineSettingPath, JSON.stringify(routineSetting));
     });
 };
 function updateObject(originalObj: any, modifiedObj: any) {

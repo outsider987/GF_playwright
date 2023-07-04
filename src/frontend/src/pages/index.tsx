@@ -50,7 +50,7 @@ const Main = () => {
       <MainWrapper>
         <NavBar></NavBar>
         <div className={container}>
-          {useLocation().pathname !== '/' ? (
+          {/* {useLocation().pathname !== '/' ? (
             <Outlet />
           ) : (
             <div className="flex flex-row space-x-3">
@@ -62,7 +62,8 @@ const Main = () => {
                 <span className=" text-xl">sizeImage</span>
               </div>
             </div>
-          )}
+          )} */}
+            <Outlet />
         </div>
       </MainWrapper>
     </>

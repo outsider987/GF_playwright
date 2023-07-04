@@ -16,14 +16,11 @@ import path from 'path';
 import { startShopeEditPage } from './editProduct/shopeEdit';
 
 // dotenv.config();
-export async function run(
-    args: {
-        routineState: typeof initialRoutineStateType;
-        globalState: typeof globalConfigType;
-        downloadState: typeof downloadStateType;
-    },
-    abortSignal: any,
-) {
+export async function run(args: {
+    routineState: typeof initialRoutineStateType;
+    globalState: typeof globalConfigType;
+    downloadState: typeof downloadStateType;
+}) {
     const { ACCOUNT, PASSWORD } = process.env;
     const { routineState, globalState, downloadState } = args;
     console.log(`Account: ${ACCOUNT}, Password: ${PASSWORD} \n 
