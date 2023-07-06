@@ -28,7 +28,17 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
         );
     });
 
-    ipcMain.handle('getRoutineState', async (event, args) => {});
+    ipcMain.handle('getRoutineState', async (event, args) => {
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        return routineSetting.routine;
+    });
+
+    ipcMain.handle('deleteSetting', async (event, args) => {
+        const index = args;
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        routineSetting.routine.splice(index, 1);
+        fs.writeFileSync(routineSettingPath, JSON.stringify(routineSetting));
+    });
 
     ipcMain.handle('saveRoutineState', async (event, args) => {
         !fs.existsSync(configPath.stateConfig) && fs.mkdirSync(configPath.stateConfig);

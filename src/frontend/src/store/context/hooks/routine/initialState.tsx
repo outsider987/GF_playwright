@@ -69,7 +69,6 @@ export const initialRoutineState = {
     text: '產品描述 編輯 (前墜 + 編輯內容 + 後墜)',
     enable: true,
     children: {
-
       移除圖片: {
         name: '移除圖片',
         text: '移除圖片',
@@ -126,9 +125,8 @@ export const initialRoutineState = {
         type: 'checkbox',
         value: true,
         isTextNumer: false,
-      }
+      },
     },
-
   },
   B: {
     code: 'B',
@@ -199,10 +197,6 @@ export const initialRoutineState = {
     name: 'SEO',
     text: 'SEO自動填入',
     enable: true,
-    children: {
-
-    }
-
-
-  }
+    children: {},
+  },
 };

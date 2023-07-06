@@ -16,8 +16,8 @@ import CurrentSettings from '~/components/Routine/currentSettings';
 const Routine = () => {
   const { pathname } = useLocation();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [isNameingModalOpen, setIsNameingModalOpen] = React.useState(false);
-  const [settingValue, setSettingValue] = React.useState('');
+
+
   const { routineState, setRoutineState } = useRoutineContext();
   const { globalState, setGlobalState } = useGlobalContext();
   const { SEND_ROUTINE_START, INVOKE_SAVE_ROUTINE_STATE } = useRoutineAPI();
@@ -60,11 +60,6 @@ const Routine = () => {
     });
   };
 
-  const handleSaveSettings = async (e) => {
-    setIsNameingModalOpen(false);
-    await INVOKE_SAVE_ROUTINE_STATE(routineState, settingValue);
-  };
-
   const filedCssClass = (isLine, type) => {
     const className = clsx(
       'flex space-y-4 pl-4 items-baseline',
@@ -77,7 +72,7 @@ const Routine = () => {
 
   return (
     <div className=" flex-1 space-y-5 align-bottom ">
-      <CurrentSettings onClick={() => setIsNameingModalOpen(true)}></CurrentSettings>
+      <CurrentSettings></CurrentSettings>
 
       {Object.values(routineState).map((item, index1) => {
         return (
@@ -119,14 +114,6 @@ const Routine = () => {
           start
         </Button>
       </div>
-      <NamingModal
-        value={settingValue}
-        setvalue={setSettingValue}
-        titile={'確認要啟動?'}
-        backdrop={() => setIsNameingModalOpen(false)}
-        toggle={isNameingModalOpen}
-        onConfirm={handleSaveSettings}
-      ></NamingModal>
 
       <ConfirmCancelModal
         titile={'確認要啟動?'}

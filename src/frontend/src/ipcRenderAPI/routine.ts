@@ -14,8 +14,8 @@ export const useRoutineAPI = () => {
     await ipcRenderer.send('routineStop');
   };
 
-  const INVOKE_GET_ROUTINE_STATE = async (routineState) => {
-    const res = await ipcRenderer.invoke('getRoutineState', { routineState }).catch((e) => console.log(e));
+  const INVOKE_GET_ROUTINE_STATE = async () => {
+    const res = await ipcRenderer.invoke('getRoutineState').catch((e) => console.log(e));
     return res;
   };
 
@@ -24,5 +24,16 @@ export const useRoutineAPI = () => {
     return res;
   };
 
-  return { SEND_ROUTINE_START, INVOKE_GET_ROUTINE_STATE, SEND_ROUTINE_STOP, INVOKE_SAVE_ROUTINE_STATE };
+  const INVOKE_DELETE_SETTING = async (index) => {
+    const res = await ipcRenderer.invoke('deleteSetting', index).catch((e) => console.log(e));
+    return res;
+  };
+
+  return {
+    SEND_ROUTINE_START,
+    INVOKE_GET_ROUTINE_STATE,
+    SEND_ROUTINE_STOP,
+    INVOKE_SAVE_ROUTINE_STATE,
+    INVOKE_DELETE_SETTING,
+  };
 };
