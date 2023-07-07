@@ -156,15 +156,16 @@ autoUpdater.on('update-available', (info) => {
             type: 'info',
             buttons: ['OK'],
             title: `新的版本${app.getVersion()}`,
-            message: `請手動下載${app.getVersion()}.dmg , 下載完畢請到下載項目手動更新`,
+            message: `請手動下載{最新版本}.dmg , 下載完畢請到下載項目手動更新`,
             detail: '下載後請手動安裝',
         };
 
         dialog.showMessageBox(dialogOpts).then((returnValue) => {});
 
-        shell.openExternal(
-            `https://github.com/outsider987/GF_playwright/releases/download/v${app.getVersion()}/robot-${app.getVersion()}.dmg`,
-        );
+        // shell.openExternal(
+        //     `https://github.com/outsider987/GF_playwright/releases/download/v${app.getVersion()}/robot-${app.getVersion()}.dmg`,
+        // );
+        mainWindow.loadURL('https://github.com/outsider987/GF_playwright/releases');
     } else {
         mainWindow.webContents.send('update-available');
         const dialogOpts = {

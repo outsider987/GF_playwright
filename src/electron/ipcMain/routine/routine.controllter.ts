@@ -2,13 +2,13 @@ import { BrowserWindow, app, ipcMain } from 'electron';
 import { run } from '../../crawler';
 import fs from 'fs';
 import { configPath } from '../../config/base';
-import { exportPath, routineState } from '../../crawler/config/base';
 import path from 'path';
 export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     const saveConfigPath = `${configPath.stateConfig}/config.json`;
     const routineSettingPath = `${configPath.stateConfig}/routineSetting.json`;
     const documentsPath = app.getPath('documents');
     const statePath = path.join(documentsPath, saveConfigPath);
+    const routineSettingDocumentPath = path.join(documentsPath, routineSettingPath);
 
     ipcMain.on('routineStart', async (event, args) => {
         console.log('routine start ');
@@ -29,23 +29,23 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
     });
 
     ipcMain.handle('getRoutineState', async (event, args) => {
-        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingDocumentPath, 'utf8'));
         return routineSetting.routine;
     });
 
     ipcMain.handle('deleteSetting', async (event, args) => {
         const index = args;
-        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingDocumentPath, 'utf8'));
         routineSetting.routine.splice(index, 1);
         fs.writeFileSync(routineSettingPath, JSON.stringify(routineSetting));
     });
 
     ipcMain.handle('saveRoutineState', async (event, args) => {
-        !fs.existsSync(configPath.stateConfig) && fs.mkdirSync(configPath.stateConfig);
-        !fs.existsSync(routineSettingPath) && fs.writeFileSync(routineSettingPath, JSON.stringify({ routine: [] }));
-        const routineSetting = JSON.parse(fs.readFileSync(routineSettingPath, 'utf8'));
+        !fs.existsSync(routineSettingDocumentPath) &&
+            fs.writeFileSync(routineSettingDocumentPath, JSON.stringify({ routine: [] }));
+        const routineSetting = JSON.parse(fs.readFileSync(routineSettingDocumentPath, 'utf8'));
         routineSetting.routine.push(args);
-        fs.writeFileSync(routineSettingPath, JSON.stringify(routineSetting));
+        fs.writeFileSync(routineSettingDocumentPath, JSON.stringify(routineSetting));
     });
 };
 function updateObject(originalObj: any, modifiedObj: any) {

@@ -20,7 +20,7 @@ const CurrentSettings: React.FC<Props> = (props) => {
 
   useEffect(() => {
     INVOKE_GET_ROUTINE_STATE().then((res) => {
-      setSettingValue(res);
+      if (res) setSettingValue(res);
     });
   }, []);
 
@@ -36,9 +36,8 @@ const CurrentSettings: React.FC<Props> = (props) => {
   const handleSaveSettings = async (e) => {
     setIsNameingModalOpen(false);
     await INVOKE_SAVE_ROUTINE_STATE(routineState, settingNaming);
-    await INVOKE_GET_ROUTINE_STATE().then((res) => {
-      setSettingValue(res);
-    });
+    const res = await INVOKE_GET_ROUTINE_STATE();
+    if (res) setSettingValue(res);
   };
   const handleDeleteSettings = async (index) => {
     await INVOKE_DELETE_SETTING(index);
