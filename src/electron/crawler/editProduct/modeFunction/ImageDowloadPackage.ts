@@ -49,7 +49,9 @@ export const startDownloadImageProcess = async (
         fs.mkdirSync(filePath, { recursive: true });
     }
 
-    const downloadPromises = urls.map((imageUrl, index) => downloadImage(imageUrl, index + 1, filePath, true));
+    const downloadPromises = urls.map((imageUrl, index) =>
+        downloadImage(imageUrl, index + 1, filePath, downloadState.isResize.enable),
+    );
 
     await Promise.all(downloadPromises)
         .then((results) => {

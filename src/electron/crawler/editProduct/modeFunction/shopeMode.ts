@@ -1,14 +1,5 @@
 import { BrowserContext, Page } from 'playwright';
 import XLSX from 'xlsx';
-import { downloadImage, loadImage } from '../../utils/image';
-
-import * as fs from 'fs';
-import { exportPath } from '../../config/base';
-import axios from 'axios';
-import { config } from 'process';
-import { app } from 'electron';
-import path from 'path';
-import { convertToTraditionalChinese } from '../../utils/utils';
 
 export const startShopeMode = async (editPage: Page, context: BrowserContext): Promise<boolean> => {
     let tryCound = 0;

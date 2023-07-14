@@ -37,7 +37,7 @@ export const RegisterFrontendEvents = (mainWindow: Electron.BrowserWindow) => {
         const index = args;
         const routineSetting = JSON.parse(fs.readFileSync(routineSettingDocumentPath, 'utf8'));
         routineSetting.routine.splice(index, 1);
-        fs.writeFileSync(routineSettingPath, JSON.stringify(routineSetting));
+        await fs.writeFileSync(routineSettingDocumentPath, JSON.stringify(routineSetting));
     });
 
     ipcMain.handle('saveRoutineState', async (event, args) => {
