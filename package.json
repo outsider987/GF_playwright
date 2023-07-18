@@ -1,6 +1,6 @@
 {
     "name": "gf_playwright",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "",
     "main": "dist/main.js",
     "url": "https://github.com/outsider987/GF_playwright/releases/download/v1.0.2/robot.exe",
@@ -99,7 +99,7 @@
         "opencc-js": "^1.0.5",
         "opencv4nodejs-prebuilt-install": "^4.1.146",
         "playwright": "^1.32.2",
-        "sharp": "^0.32.1",
+        "sharp": "^0.32.2",
         "spacy": "^0.0.4",
         "tesseract.js": "^4.0.3",
         "tsconfig-paths": "^4.2.0",
