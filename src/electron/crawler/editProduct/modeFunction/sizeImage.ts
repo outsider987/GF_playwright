@@ -33,16 +33,19 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
             let result = '';
             const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>|<img(.*?)>/g);
             const getImageSrcList = newTCinnerHtmlStr.match(/src="([^"]*)"[^>]*/g).map((str) => {
-                if (str.match(/https:\/\//)) {
+                if (str.match(/https:\/\//) || str.match(/http:\/\//)) {
                     const tempStr = str.replace(/src="|"/g, '');
                     const regex = /(https?:[^\s]+)/g;
+                    const regex2 = /(http?:[^\s]+)/g;
+                    const urls2 = tempStr.match(regex2);
+                    if (urls2) return urls2[0];
                     const urls = tempStr.match(regex);
                     return urls[0];
                 } else {
                     const tempStr = str.replace(/src="|(\/\/)|"/g, '');
                     const urls = tempStr.split(' ')[0];
-
-                    return 'https://' + urls;
+                    //http:img1.vvic.com/upload
+                    https: return 'https://' + urls;
                 }
             });
             const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
@@ -148,9 +151,11 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         if (!text.split('').includes('尺') && !text.split('').includes('寸')) continue;
 
         // to get only had sensitive word
-        const fromImageTextJson = await csv().fromString(
-            text.replace(/Qize information.-\n\n|Qize information./g, '').replace(/“|”|。/g, ''),
-        );
+        const fromImageTextJson = await csv().fromString(text);
+
+        // const fromImageTextJson = await csv().fromString(
+        //     text.replace(/Qize information.-\n\n|Qize information./g, '').replace(/“|”|。/g, ''),
+        // );
         let row2 = '';
         let templateKey = [];
         for (const [index, imageTextObject] of Object.values(fromImageTextJson).entries()) {

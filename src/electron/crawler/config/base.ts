@@ -24,8 +24,8 @@ export const defaultCode = 'SBCMITFO';
 export const globalState = {
     count: 1,
     debug: true,
-    saveMode: false,
-    mode: mode.sizeImage,
+    saveMode: true,
+    mode: mode.shope,
     isRunning: false,
     target: '',
     subTarget: '',

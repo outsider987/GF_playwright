@@ -8,6 +8,20 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
         const titleElement = await editPage.waitForSelector('#productName');
         const categeoryElement = await editPage.waitForSelector('#categoryHistoryId');
 
+        // if product was back then chose the category
+        if (await (await titleElement.inputValue()).split('').includes('包')) {
+            await categeoryElement.click();
+            categeoryElement.$$eval('option', (options) => {
+                if (options) {
+                    for (const option of options) {
+                        if (option.innerText === '側/肩背包') {
+                            option.setAttribute('selected', 'selected');
+                        }
+                    }
+                }
+            });
+        }
+
         // start title
         if (await (await titleElement.inputValue()).match(/🌷/)) {
             await editPage.close();
