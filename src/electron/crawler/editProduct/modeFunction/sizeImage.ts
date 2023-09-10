@@ -157,17 +157,20 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         //     text.replace(/Qize information.-\n\n|Qize information./g, '').replace(/“|”|。/g, ''),
         // );
         let row2 = '';
-        let templateKey = [];
+        let templateKey: any[] = [];
         for (const [index, imageTextObject] of Object.values(fromImageTextJson).entries()) {
             const imageText = Object.values(imageTextObject)[0] as any;
 
             // header key
             if (conditionalGrapSize(imageText)) {
-                const imageTextArray = imageText.split(/\s+/gm);
+                console.log(splitString(imageText));
+                // const imageTextArray = imageText.split(/\s+/gm);
+                const imageTextArray = splitString(imageText).split(/\s+/gm);
                 templateKey = imageTextArray;
             }
+
             // row data
-            else if (imageText.match(/(?=.*\d)[\u4E00-\u9FFFa-zA-Z0-9]{0,5}/g)) {
+            else if (imageText.match(/(?=.*\d)[\u4E00-\u9FFFa-zA-Z0-9]{0,5}/g) && imageText !== 'TAOCHUAN.STUDI0') {
                 const tempstring = Object.values(imageTextObject)[0] as any;
                 const newTempString = templateKey.map(
                     (key: any, index: any) => `${key} ${tempstring.split(/\s+/)[index]}`,
@@ -187,6 +190,23 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
 
     XLSX.writeFile(workbook, destinationFile);
 };
+
+function splitString(inputString: string) {
+    const evenPairs = [];
+    const splitStrings = inputString.split(/\s/gm).filter((str) => str !== '');
+
+    let curStr = '';
+    for (let i = 0; i < splitStrings.length; i += 2) {
+        curStr = splitStrings[i];
+        // if(curStr=== "“")
+        //     continue
+        // if(curStr==="“")
+        if (i + 1 < splitStrings.length) {
+            evenPairs.push(splitStrings[i] + splitStrings[i + 1]);
+        }
+    }
+    return evenPairs.join(' ');
+}
 
 const convertTotableHtml = async (input: string) => {
     try {

@@ -86,7 +86,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
         for (const json of jsons) {
             const { 流水號, content } = json as any;
             const key = 流水號.match(/\【(.*?)\】/);
-            if (skuNumber === key[1]) {
+            if (key && skuNumber === key[1]) {
                 await textareas.fill(content);
             }
         }
