@@ -65,6 +65,12 @@ export async function startShopeEditPage(
                 // }
                 const saveElement = await editPage.$('.btn-orange.m-left10.toSubmit:text("保存")');
                 await saveElement?.click();
+                await Sleep(1000);
+                if (await editPage.$('span:text("产品信息中有错误，请检查")')) {
+                    await editPage.close();
+                    continue;
+                }
+
                 await editPage.waitForSelector('#msgText');
                 await editPage.close();
                 console.log('end save');
