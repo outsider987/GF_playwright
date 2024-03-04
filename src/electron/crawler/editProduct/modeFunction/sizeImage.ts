@@ -9,7 +9,7 @@ import csv from 'csvtojson';
 import { conditionalGrapSize, finalCheckSenstitiveCgaracter } from '../../utils/sizeImage';
 
 export const startSizeImageProcess = async (editPage: Page, context: BrowserContext, collectDatas: any[]) => {
-    const sizeFrameSelector = '#cke_1_contents';
+    const sizeFrameSelector = '#cke_3_contents';
     const contentElement = await editPage.waitForSelector(sizeFrameSelector);
     const iframeElement = await contentElement.waitForSelector('iframe');
     await iframeElement.waitForElementState('visible');
@@ -29,7 +29,8 @@ export const startSizeImageProcess = async (editPage: Page, context: BrowserCont
 export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: string, code: any) => {
     try {
         const isIamgePattern = /<img[^>]*>/g;
-        if (isIamgePattern.test(newTCinnerHtmlStr)) {
+        const isPassImage = true;
+        if (isIamgePattern.test(newTCinnerHtmlStr) && !isPassImage) {
             let result = '';
             const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>|<img(.*?)>/g);
             const getImageSrcList = newTCinnerHtmlStr.match(/src="([^"]*)"[^>]*/g).map((str) => {
@@ -151,7 +152,9 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
         if (!text.split('').includes('尺') && !text.split('').includes('寸')) continue;
 
         // to get only had sensitive word
-        const fromImageTextJson = await csv().fromString(text);
+        const fromImageTextJson = await csv().fromString(
+            text.replace(/(S ize information.\n\n-|重 量 : (\d+\.\d+)|k)/g, ''),
+        );
 
         // const fromImageTextJson = await csv().fromString(
         //     text.replace(/Qize information.-\n\n|Qize information./g, '').replace(/“|”|。/g, ''),

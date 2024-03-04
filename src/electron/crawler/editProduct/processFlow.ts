@@ -334,7 +334,7 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
 }
 
 export async function setSizeAndTranslate(editPage: Page, context: BrowserContext, config: configType) {
-    const sizeFrameSelector = '#cke_1_contents';
+    const sizeFrameSelector = '#cke_3_contents';
     const contentElement = await editPage.waitForSelector(sizeFrameSelector);
 
     const iframeElement = await contentElement.waitForSelector('iframe');

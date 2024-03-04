@@ -25,7 +25,7 @@ export const globalState = {
     count: 1,
     debug: true,
     saveMode: true,
-    mode: mode.shope,
+    mode: mode.routine,
     isRunning: false,
     target: '',
     subTarget: '',
@@ -203,7 +203,7 @@ export const routineState = {
                 text: 'SKU取代標題',
                 isLine: true,
                 type: 'checkbox',
-                value: false,
+                value: true,
                 isTextNumer: false,
             },
 
@@ -212,7 +212,7 @@ export const routineState = {
                 text: '使用順序號',
                 isLine: true,
                 type: 'checkbox',
-                value: true,
+                value: false,
                 isTextNumer: false,
             },
             號碼: {

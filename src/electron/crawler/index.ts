@@ -123,4 +123,4 @@ export async function run(args: {
         //     return await run(args, abortSignal);
     }
 }
-// run({ routineState: initialRoutineStateType, globalState: globalConfigType, downloadState: downloadStateType });
+run({ routineState: initialRoutineStateType, globalState: globalConfigType, downloadState: downloadStateType });

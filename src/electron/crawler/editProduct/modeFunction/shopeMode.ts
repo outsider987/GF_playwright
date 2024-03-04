@@ -1,7 +1,9 @@
 import { BrowserContext, Page } from 'playwright';
 import XLSX from 'xlsx';
+import { Sleep } from '../../utils/utils';
 
 export const startShopeMode = async (editPage: Page, context: BrowserContext): Promise<boolean> => {
+    await Sleep(1000);
     let tryCound = 0;
     try {
         await editPage.waitForLoadState('networkidle');
@@ -36,8 +38,9 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
 
         const expandBtn = await editPage.$('#otherAttrShowAndHide');
         await expandBtn.click();
+
         const brandId = await editPage.$('.chosen-container.chosen-container-single');
-        if (await brandId.isVisible()) {
+        if (brandId && (await brandId.isVisible())) {
             const a = await brandId.$('a');
             await a.click();
             const brandIdOption = await brandId.$('li.active-result[data-option-array-index="1"]');

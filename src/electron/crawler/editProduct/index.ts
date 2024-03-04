@@ -13,6 +13,7 @@ import { startSizeImageProcess } from './modeFunction/sizeImage';
 import { startDownloadImageProcess } from './modeFunction/ImageDowloadPackage';
 import { openOnlineProduct } from './filterHandle';
 import { startShopeMode } from './modeFunction/shopeMode';
+import { Sleep } from '../utils/utils';
 
 export async function startEditPage(
     page: Page,
@@ -35,6 +36,7 @@ export async function startEditPage(
         const bodyElement = await page.waitForSelector(tBodySelector);
 
         console.log('start wait and collect edit with list');
+
         await bodyElement.waitForSelector('a:text("编辑")');
 
         const edits = await bodyElement.$$('a:text("编辑")');
@@ -47,7 +49,7 @@ export async function startEditPage(
                 await page.close();
             }
             const newEdit = await edits[currentEditIndex];
-
+            await Sleep(300);
             await newEdit.click();
 
             const editPage = await context.waitForEvent('page');
@@ -105,7 +107,6 @@ export async function startEditPage(
                     currentEditIndex++;
                     await editPage.close();
                     continue;
-                    break;
 
                 case mode.downloadImagePackage:
                     await startDownloadImageProcess(editPage, context, config.downloadState);
