@@ -10,3 +10,5 @@ declare module 'table-extractor' {
         extract(text: string): Promise<TableData[]>;
     }
 }
+
+

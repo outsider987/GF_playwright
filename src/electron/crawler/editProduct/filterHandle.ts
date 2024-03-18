@@ -1,6 +1,5 @@
 import { BrowserContext, Page } from 'playwright';
 import { exportPath, sensitiveWord } from '../config/base';
-import { recognizeImage } from '../utils/image';
 import { Sleep } from '../utils/utils';
 import { globalState as globalConfigType } from '../config/base';
 

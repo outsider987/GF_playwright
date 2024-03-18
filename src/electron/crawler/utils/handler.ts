@@ -39,18 +39,33 @@ export const reWaitSelector = async ({ page, selector, retry = 0 }: ReRequestPag
 export const handleClodeModal = async (page: Page) => {
     const tBodySelector = '#shopifySysMsg';
 
-    // await page.waitForSelector(tBodySelector);
-    await Sleep(2000);
-    // await page.waitForLoadState('networkidle');
-    console.log('start close modal');
-    await Sleep(1000);
-    const closeBtn = await page.$(`.close`);
+    const MAX_ATTEMPTS = 5; // Maximum number of attempts to close the modal
+    const INTERVAL = 1000; // Interval between attempts (in milliseconds)
 
-    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
-    await Sleep(1000);
-    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
-    await Sleep(1000);
-    if (closeBtn && (await closeBtn.isVisible())) await closeBtn.click();
+    let attempts = 0;
+    let modalClosed = false;
+
+    while (!modalClosed && attempts < MAX_ATTEMPTS) {
+        await Sleep(INTERVAL);
+        console.log('Attempt to close modal:', attempts + 1);
+
+        const closeBtn = await page.$('.close');
+        if (closeBtn && (await closeBtn.isVisible())) {
+            await closeBtn.click();
+            await Sleep(INTERVAL); // Wait for modal to close
+            modalClosed = !(await closeBtn.isVisible()); // Check if modal is still visible
+        } else {
+            modalClosed = true; // If close button is not found or not visible, assume modal is already closed
+        }
+
+        attempts++;
+    }
+
+    if (modalClosed) {
+        console.log('Modal closed successfully.');
+    } else {
+        console.log('Failed to close modal after maximum attempts.');
+    }
 };
 
 export const handleError = async (

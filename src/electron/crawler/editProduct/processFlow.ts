@@ -1,7 +1,7 @@
 import { Browser, BrowserContext, Page, firefox } from 'playwright';
 import { handleError, handleGoToPage } from '../utils/handler';
 import { Sleep, convertToTraditionalChinese } from '../utils/utils';
-import { loadImage, removeSimilarImages, recognizeImage } from '../utils/image';
+import { loadImage, removeSimilarImages } from '../utils/image';
 import {
     AliaRoute,
     globalState,

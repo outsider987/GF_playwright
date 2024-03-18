@@ -1,12 +1,16 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import Tesseract from 'node-tesseract-ocr';
-// const tesseract = require("node-tesseract-ocr")
+import cv from 'opencv4nodejs';
+// const cv = require('opencv.js');
+
+import NodeTesseract from 'node-tesseract-ocr';
+
+import Tesseract from 'tesseract.js';
 import sharp from 'sharp';
 import * as fs from 'fs';
 import { error } from 'console';
-import { convertToTraditionalChinese } from './utils';
-// import cv from 'opencv4nodejs';
+
+// Load 'opencv.js' assigning the value to the global variable 'cv'
 
 interface ImageType {
     url: string;
@@ -84,23 +88,77 @@ export async function removeSimilarImages(images: string[]) {
     return { uniqueImages, removedIndices };
 }
 
-export async function recognizeImage(url: string): Promise<string> {
+// async function detectText(imageBuffer: Buffer) {
+//     const img = cv.imdecode(imageBuffer);
+
+//     // Convert image to grayscale
+//     const grayImg = img.cvtColor(cv.COLOR_BGR2GRAY);
+
+//     // Use a text detection algorithm (e.g., EAST text detector)
+//     const textDetector = new cv.readNetFromCaffe();
+//     const [, scores] = await textDetector.detect(grayImg);
+
+//     // Filter out low-confidence text detections
+//     const highConfidenceIndices = scores
+//         .map((score: any, index: any) => [score, index])
+//         .filter(([score]: any) => score > 0.5)
+//         .map(([, index]: any) => index);
+
+//     // Draw bounding boxes around detected text
+//     const boxes = await textDetector.detect(grayImg);
+//     const outputImg = img.copy();
+//     for (const i of highConfidenceIndices) {
+//         const box = boxes[i];
+//         outputImg.drawRectangle(
+//             new cv.Point2(box.x, box.y),
+//             new cv.Point2(box.x + box.width, box.y + box.height),
+//             new cv.Vec3(0, 255, 0), // Green color
+//             2
+//         );
+//     }
+
+//     // Show the image with detected text
+//     cv.imshow('Detected Text', outputImg);
+//     cv.waitKey(0);
+
+//     const extractedText = await Tesseract.recognize(buffer, { lang: 'eng' });
+
+//     return extractedText;
+
+// }
+
+const SharpDetect = async (data: any) => {
+    const preprocessedImage = await sharp(data).resize(1000).greyscale().normalize().sharpen().toBuffer();
+    const result = await NodeTesseract.recognize(preprocessedImage, {
+        lang: 'chi_sim',
+        // psm: 3,
+        // // oem: 1,
+        // dpi: 120,
+        oem: 1,
+        psm: 3,
+        // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    });
+
+    return result;
+};
+
+export async function recognizeImage(url: string): Promise<any> {
     try {
         const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
-        const preprocessedImage = await sharp(response.data).resize(1000).greyscale().normalize().sharpen().toBuffer();
 
-        // Extract text using Tesseract.js with the chi_tra language data
-        const result = await Tesseract.recognize(preprocessedImage, {
-            lang: 'chi_sim',
-            psm: 3,
-            // oem: 1,
-            dpi: 120,
+        try {
+            // Preprocess the image
 
-            // tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-        });
+            // const imageBuffer = await preprocessImage(response.data);
+            const imageBuffer = Buffer.from(response.data, 'binary');
+            // detectText(imageBuffer);
+            // Detect text regions
+            const SharpTexts = await SharpDetect(response.data);
 
-        console.log(result);
-        return convertToTraditionalChinese(result);
+            return SharpTexts;
+        } catch (error) {
+            console.error('Error processing image:', error);
+        }
     } catch (error) {
         console.log(error);
         console.log('failed image to text');

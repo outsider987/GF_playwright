@@ -22,3 +22,9 @@ export interface HTMLConvertHandler {
     convert(): void;
     restore(): void;
 }
+
+declare global {
+    interface Window {
+        cv: typeof import('mirada/dist/src/types/opencv/_types');
+    }
+}

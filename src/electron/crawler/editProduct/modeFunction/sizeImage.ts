@@ -7,6 +7,7 @@ import { exportPath } from '../../config/base';
 import fs from 'fs';
 import csv from 'csvtojson';
 import { conditionalGrapSize, finalCheckSenstitiveCgaracter } from '../../utils/sizeImage';
+import axios from 'axios';
 
 export const startSizeImageProcess = async (editPage: Page, context: BrowserContext, collectDatas: any[]) => {
     const sizeFrameSelector = '#cke_3_contents';
@@ -29,7 +30,7 @@ export const startSizeImageProcess = async (editPage: Page, context: BrowserCont
 export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: string, code: any) => {
     try {
         const isIamgePattern = /<img[^>]*>/g;
-        const isPassImage = true;
+        const isPassImage = false;
         if (isIamgePattern.test(newTCinnerHtmlStr) && !isPassImage) {
             let result = '';
             const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>|<img(.*?)>/g);
@@ -49,8 +50,37 @@ export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: 
                     https: return 'https://' + urls;
                 }
             });
-            const texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
+            let texts = await Promise.all(getImageSrcList.map((url) => recognizeImage(url)));
+            // if (texts.join('').includes('尺')) {
+            //     const template = `${texts.join('')} 幫我擷取尺寸表資訊  , 並且參照這樣的模版,如下所示 :
+            //     胸圍97 衣長85 肩寬36.5 袖長25`;
+            //     const options = {
+            //         method: 'POST',
+            //         url: 'https://api.edenai.run/v2/text/generation',
+            //         headers: {
+            //             authorization:
+            //                 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTdkZTY4MzQtZWJiMS00NmUxLTk1ZWUtOTBiN2UwMjhjMjM2IiwidHlwZSI6ImFwaV90b2tlbiJ9.Ucs0cI98QhIAhp1puRoVYtfNa4m5--Ombe_HxyqkldI',
+            //         },
+            //         data: {
+            //             providers: 'amazon',
+            //             text: template,
+            //             temperature: 0.1,
+            //             max_tokens: 250,
+            //             fallback_providers: '',
+            //         },
+            //     };
+
+            //     const responseData = await axios.request(options);
+            //     console.log(responseData.data.amazon.generated_text);
+
+            //     // const indexs = getDuplicatedIndexs(texts);
+            //     const test = texts.join('/break');
+
+            //     await saveExcelFile(titleValue, code, responseData.data.amazon.generated_text);
+            // }
+
             const indexs = getDuplicatedIndexs(texts);
+            const test = texts.join('/break');
 
             await saveExcelFile(titleValue, code, texts);
 
@@ -148,8 +178,9 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
     }
 
     const rowDatas = [] as any;
+
     for (const text of texts) {
-        if (!text.split('').includes('尺') && !text.split('').includes('寸')) continue;
+        if (!text.split('').includes('尺')) continue;
 
         // to get only had sensitive word
         const fromImageTextJson = await csv().fromString(
@@ -182,12 +213,15 @@ const saveExcelFile = async (titleValue: string, code: any, texts: any) => {
             }
         }
         // finnal check row data is expected
-        if (!finalCheckSenstitiveCgaracter(row2.split(''))) continue;
+        // if (!finalCheckSenstitiveCgaracter(row2.split(''))) continue;
         const combineResult = `【尺 碼 信 息 x Size info】\n${row2}\n手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準`;
         rowDatas.push([code, combineResult]);
 
         console.log(rowDatas);
     }
+
+    // const combineResult = `【尺 碼 信 息 x Size info】\n${texts}\n手工平鋪測量，誤差允許在2~5cm左右，具體以實物為準`;
+    // rowDatas.push([code, combineResult]);
 
     XLSX.utils.sheet_add_aoa(worksheet, rowDatas, { origin: -1 });
 
