@@ -9,7 +9,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
         await editPage.waitForLoadState('networkidle');
         const titleElement = await editPage.waitForSelector('#productName');
         const categeoryElement = await editPage.waitForSelector('#categoryHistoryId');
-
+     
         // if product was back then chose the category
         if (await (await titleElement.inputValue()).split('').includes('包')) {
             await categeoryElement.click();
@@ -85,12 +85,28 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
         const jsons = XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']);
 
         const textareas = await editPage.$('textarea');
+      
 
         for (const json of jsons) {
             const { 流水號, content } = json as any;
             const key = 流水號.match(/\【(.*?)\】/);
             if (key && skuNumber === key[1]) {
-                await textareas.fill(content);
+             
+                const iframe = await editPage.$('iframe.cke_wysiwyg_frame.cke_reset');
+                if (iframe) {
+                    const frame = await iframe.contentFrame();
+                    if (frame) {
+                        const body = await frame.$('body');
+                        if (body) {
+                            const existingContent = await body.innerHTML();
+                            const newContent = `<h3 style="text-align: center;">${content.replace(/\n/g, '<br>')}</h3>${existingContent}`;
+                            await frame.evaluate((content) => {
+                                document.body.innerHTML = content;
+                            }, newContent);
+                        }
+                    }
+                }
+                // await textareas.fill(content + '\n\n' + existingContent);
             }
         }
 

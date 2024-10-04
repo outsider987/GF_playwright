@@ -47,6 +47,7 @@ export async function run(args: {
         const page: Page = await context.newPage();
 
         const documentsPath = app ? app.getPath('documents') : './';
+
         const cookiePath = path.join(documentsPath, exportPath.cookies);
         // await page.goto('https://www.dianxiaomi.com/index.htm', { timeout: 0 });
         if (fs.existsSync(`${cookiePath}/cookies.json`)) {

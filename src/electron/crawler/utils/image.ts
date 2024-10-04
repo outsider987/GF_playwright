@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import cv from 'opencv4nodejs';
+
 // const cv = require('opencv.js');
 
 import NodeTesseract from 'node-tesseract-ocr';

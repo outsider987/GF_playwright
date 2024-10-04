@@ -26,8 +26,8 @@ autoUpdater.setFeedURL({
 
 async function createWindow() {
     let display = screen.getPrimaryDisplay();
-    let widtho = display.bounds.width * 0.2;
-    let heighto = display.bounds.height * 0.8;
+    let widtho = display.bounds.width * 0.1;
+    let heighto = display.bounds.height * 1;
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
