@@ -27,8 +27,8 @@ export const globalState = {
     saveMode: true,
     mode: mode.shope,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: '小米粒',
+    subTarget: '20241209',
 };
 
 export const routineState = {

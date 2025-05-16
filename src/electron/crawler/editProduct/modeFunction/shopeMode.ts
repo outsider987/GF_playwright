@@ -30,6 +30,10 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             return false;
         }
         const key = (await titleElement.inputValue()).match(/\【(.*?)\】/);
+        if (!key) {
+            await editPage.close();
+            return false;
+        }
         const titleStr = (await titleElement.inputValue()).replace(/【(.*?)】/, '🌷').replace(/\d+$/, key[1]);
         const skuNumber = (await titleElement.inputValue()).match(/【(.*?)】/)[1];
         await titleElement.fill(titleStr);

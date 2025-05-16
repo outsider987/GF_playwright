@@ -30,7 +30,7 @@ export const startSizeImageProcess = async (editPage: Page, context: BrowserCont
 export const saveSizeHtmlString = async (newTCinnerHtmlStr: string, titleValue: string, code: any) => {
     try {
         const isIamgePattern = /<img[^>]*>/g;
-        const isPassImage = false;
+        const isPassImage = true;
         if (isIamgePattern.test(newTCinnerHtmlStr) && !isPassImage) {
             let result = '';
             const imgTagList = newTCinnerHtmlStr.match(/<img[^>]*>|<img(.*?)>/g);
