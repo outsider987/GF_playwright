@@ -23,9 +23,9 @@ export const defaultCode = 'SBCMITFO';
 
 export const globalState = {
     count: 1,
-    debug: true,
-    saveMode: false,
-    mode: mode.downloadImagePackage,
+    debug: false,
+    saveMode: true,
+    mode: mode.shope,
     isRunning: false,
     target: 'cim',
     subTarget: '20250508',
