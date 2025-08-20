@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: false,
     saveMode: true,
-    mode: mode.shope,
+    mode: mode.routine,
     isRunning: false,
-    target: 'cim',
-    subTarget: '20250508',
+    target: '',
+    subTarget: '',
 };
 
 export const routineState = {

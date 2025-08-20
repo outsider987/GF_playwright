@@ -212,8 +212,31 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 }
                 // await barCodePage.waitForLoadState('networkidle');
 
-                const targetElement = await barCodePage.waitForSelector(spanSelector);
-                const barcodeAlia = await targetElement.innerHTML();
+                // Robustly locate 货号 value using multiple selectors and XPath as fallback
+                const aliaSelectors = [
+                    spanSelector,
+                    'tr.ant-descriptions-row th.ant-descriptions-item-label:has-text("货号") + td.ant-descriptions-item-content .field-value',
+                    'th:has-text("货号") + td .field-value',
+                ];
+                let targetElement = null;
+                for (const sel of aliaSelectors) {
+                    const el = await barCodePage.$(sel);
+                    if (el) {
+                        targetElement = el;
+                        break;
+                    }
+                }
+                if (!targetElement) {
+                    const xpathExpr =
+                        '//tr[contains(@class, "ant-descriptions-row")]//th[contains(@class, "ant-descriptions-item-label")]//span[normalize-space()="货号"]/ancestor::th/following-sibling::td[1]//*[contains(@class, "field-value")]' +
+                        '|//th[./span[normalize-space()="货号"]]/following-sibling::td[1]//span';
+                    const els = await barCodePage.$$(`xpath=${xpathExpr}`);
+                    if (els.length > 0) targetElement = els[0];
+                }
+                if (!targetElement) throw new Error('Unable to locate 货号 on source page');
+
+                let barcodeAlia = (await targetElement.innerText()).trim();
+                barcodeAlia = barcodeAlia.replace(/\D/g, '');
                 if (!barcodeAlia) throw new Error('barcode is empty');
 
                 console.log(barcodeAlia);
