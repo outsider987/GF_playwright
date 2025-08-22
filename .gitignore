@@ -8,3 +8,4 @@ release/
 release2/
 app-win32-x64/
 app-darwin-x64/
+debug-artifacts/
