@@ -140,7 +140,7 @@ export async function startEditPage(
                 }
 
                 // Wait for success modal content
-                await editPage.waitForSelector('.ant-modal-body:has-text("您的产品编辑成功")');
+                await editPage.waitForSelector('.ant-modal-body:has-text("您的产品已保存到「 待发布")');
                 await editPage.close();
                 console.log('end save');
             } else if (config.globalState.debug) debugger;

@@ -70,11 +70,11 @@ export async function startProcessCodeFlow(
                 });
                 SKU += 'I';
                 break;
-            case 'O':
-                if (!config.routineState.O.enable) continue;
-                await handleError(async () => await SEOAutoFillIn(editPage), { code: 'O', config });
-                SKU += 'O';
-                break;
+            // case 'O':
+            //     if (!config.routineState.O.enable) continue;
+            //     await handleError(async () => await SEOAutoFillIn(editPage), { code: 'O', config });
+            //     SKU += 'O';
+            //     break;
 
             default:
                 break;
