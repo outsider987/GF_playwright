@@ -427,39 +427,47 @@ export async function setSizeAndTranslate(editPage: Page, context: BrowserContex
 
 export async function removeDuplicateImageAndEnable(editPage: Page, config: configType) {
     console.log('［I］ start process image');
-    const showMoreBtn = await editPage.$('#showMoreImg');
-    if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
-    const checkBoxs = await editPage.$$('input[type="checkbox"][name="selectedImg"]');
-    const imageDivElements = await editPage.$$('.imgDivIn');
-    const deleteBtns = await editPage.$$('.attach-icons.pull-right.yiImg');
-    const urls = [];
+    // Try to click the "查看更多" button if present (new UI)
+    const showMoreBtn = await editPage.$('span.link.view-more:has-text("查看更多")');
+    if (showMoreBtn && (await showMoreBtn.isVisible())) {
+        await showMoreBtn.click();
+    }
+    // New UI structure: .img-list contains .single-image.img-item entries
+    const imageItems = editPage.locator('.img-list .single-image.img-item');
+    const itemCount = await imageItems.count();
 
     // checked all images
-
     if (config.routineState.I.children.勾選所有圖片.value) {
-        for (const checkBox of checkBoxs) {
-            if (!(await checkBox.isChecked()) && (await checkBox.isVisible()) && !(await checkBox.isHidden())) {
-                await checkBox.click();
+        const checkboxes = imageItems.locator('label.image-checkbox input.ant-checkbox-input');
+        const cbCount = await checkboxes.count();
+        for (let i = 0; i < cbCount; i++) {
+            const cb = checkboxes.nth(i);
+            if (!(await cb.isChecked())) {
+                await cb.check({ force: true });
             }
         }
     }
 
     // remove duplicate images
-    if (config.routineState.I.children.移除相同圖片.value) {
-        for (const image of imageDivElements) {
-            const imageElement = await image.$('img');
-            if (imageElement) {
-                const url = await imageElement.getAttribute('src');
-                if (url) urls.push(url);
-            }
-        }
-        const images = await Promise.all(urls.map((url) => loadImage(url, 200)));
-        const { removedIndices } = await removeSimilarImages(images);
+    // if (config.routineState.I.children.移除相同圖片.value) {
+    //     const imageUrlByItemIndex: Array<{ itemIndex: number; url: string }> = [];
+    //     for (let i = 0; i < itemCount; i++) {
+    //         const imageLocator = imageItems.nth(i).locator('img.img-css');
+    //         const src = await imageLocator.getAttribute('src');
+    //         if (src && src.length > 0) imageUrlByItemIndex.push({ itemIndex: i, url: src });
+    //     }
+    //     const images = await Promise.all(imageUrlByItemIndex.map((entry) => loadImage(entry.url, 200)));
+    //     const { removedIndices } = await removeSimilarImages(images);
 
-        for (const index of removedIndices) {
-            await deleteBtns[index].click();
-        }
-    }
+    //     for (const removed of removedIndices) {
+    //         const actualItemIndex = imageUrlByItemIndex[removed]?.itemIndex;
+    //         if (actualItemIndex === undefined) continue;
+    //         const deleteBtn = imageItems.nth(actualItemIndex).locator('a.iconfont.icon_delete');
+    //         if (await deleteBtn.count()) {
+    //             await deleteBtn.first().click();
+    //         }
+    //     }
+    // }
 
     console.log('end process image');
 }
