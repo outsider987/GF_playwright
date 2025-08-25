@@ -26,7 +26,7 @@ export async function startEditPage(
 ) {
     let currentEditIndex = 0;
     try {
-        const tBodySelector = '#shopifySysMsg';
+        const tBodySelector = 'div .table-section';
         const headerSelector = '#title';
 
         await handleClodeModal(page);
@@ -61,14 +61,16 @@ export async function startEditPage(
             await editPage.waitForSelector(headerSelector);
             switch (config.globalState.mode) {
                 case mode.routine:
-                    await editPage.waitForSelector('[data-name="sku"]');
-                    const skuInputElementS = await editPage.$$('[data-name="sku"]');
-                    let inputValue = '';
-                    for (const sku of skuInputElementS) {
-                        const inputElement = await sku.$('input');
+                  
+                    // Preferred: use Locator API to read SKU value(s)
+                    const skuInputs = editPage.locator('input[name="sku"]:visible');
+                    const count = await skuInputs.count();
 
-                        if (inputElement && (await inputElement.inputValue()) !== '') {
-                            inputValue = await inputElement.inputValue();
+                    let inputValue = '';
+                    for (let i = 0; i < count; i++) {
+                        const val = await skuInputs.nth(i).inputValue();
+                        if (val.trim() !== '') {
+                            inputValue = val;
                             break;
                         }
                     }
@@ -129,9 +131,16 @@ export async function startEditPage(
                     console.log('code no change, close edit page');
                     editPage.close();
                 }
-                const saveElement = await editPage.$('[data-value="save-4"]');
+                const saveElement = await editPage.$('button.ant-btn.btn-orange:has-text("保存")');
                 await saveElement?.click();
-                await editPage.waitForSelector('#msgText');
+                await Sleep(1000);
+                if (await editPage.$('span:text("产品信息中有错误，请检查")')) {
+                    await editPage.close();
+                    continue;
+                }
+
+                // Wait for success modal content
+                await editPage.waitForSelector('.ant-modal-body:has-text("您的产品编辑成功")');
                 await editPage.close();
                 console.log('end save');
             } else if (config.globalState.debug) debugger;

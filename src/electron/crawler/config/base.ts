@@ -25,7 +25,7 @@ export const globalState = {
     count: 1,
     debug: false,
     saveMode: true,
-    mode: mode.shope,
+    mode: mode.routine,
     isRunning: false,
     target: '',
     subTarget: '',
@@ -105,7 +105,7 @@ export const routineState = {
             移除圖片: {
                 name: '移除圖片',
                 text: '移除圖片',
-                isLine: true,
+                isLine: false,
                 type: 'checkbox',
                 value: true,
                 isTextNumer: false,
@@ -113,7 +113,7 @@ export const routineState = {
             移除文字: {
                 name: '移除文字',
                 text: '移除文字',
-                isLine: true,
+                isLine: false,
                 type: 'checkbox',
                 value: true,
                 isTextNumer: false,

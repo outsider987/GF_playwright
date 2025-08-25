@@ -34,21 +34,21 @@ export async function startProcessCodeFlow(
                 await handleError(async () => await translateTitle(editPage), { code: 'T', config });
                 SKU += 'T';
                 break;
-            case 'C':
-                if (!config.routineState.C.enable) continue;
-                await handleError(async () => await setConstant(editPage, config), { code: 'C', config });
-                SKU += 'C';
-                break;
+            // case 'C':
+            //     if (!config.routineState.C.enable) continue;
+            //     await handleError(async () => await setConstant(editPage, config), { code: 'C', config });
+            //     SKU += 'C';
+            //     break;
             case 'B':
                 if (!config.routineState.B.enable) continue;
                 await handleError(async () => await setBarcode(editPage, context), { code: 'B', config });
                 SKU += 'B';
                 break;
-            case 'M':
-                if (!config.routineState.M.enable) continue;
-                await handleError(async () => await setMoney(editPage, config), { code: 'M', config });
-                SKU += 'M';
-                break;
+            // case 'M':
+            //     if (!config.routineState.M.enable) continue;
+            //     await handleError(async () => await setMoney(editPage, config), { code: 'M', config });
+            //     SKU += 'M';
+            //     break;
             case 'F':
                 if (!config.routineState.F.enable) continue;
                 SKU += 'F';
@@ -84,27 +84,36 @@ export async function startProcessCodeFlow(
 }
 
 export async function translateTitle(editPage: Page) {
-    const headerSelector = '#title';
-    const titleElement = await editPage.waitForSelector(headerSelector);
-    const titleValue = (await titleElement?.inputValue()).replace(/【.*?】/g, '');
+    const titleInput = editPage.locator('input#title:visible');
+    await titleInput.waitFor();
+    const titleValue = (await titleInput.inputValue()).replace(/【.*?】/g, '');
 
     const newTCValue = await convertToTraditionalChinese(titleValue);
 
-    await titleElement.fill(newTCValue);
+    await titleInput.fill(newTCValue);
     console.log('end translate title');
 
-    const colorSelector = '.change-box-out.changeBoxOut';
-    const colorElements = await editPage.$$(colorSelector);
-    for (const color of colorElements) {
-        const editElement = await color.$('.change-box.changeBox');
-        await editElement?.click();
-        const inputElement = await editElement.$('input');
+    // Update color option editor to new DOM structure
+    const optionItems = editPage.locator('.options-module label.d-checkbox .theme-value-edit');
+    const optionCount = await optionItems.count();
+    for (let i = 0; i < optionCount; i++) {
+        const item = optionItems.nth(i);
+        const textElement = item.locator('.theme-value-text');
+        const originalText = (await textElement.innerText()).trim();
 
-        const value = await inputElement?.inputValue();
-        const newColorTextValue = await convertToTraditionalChinese(value);
-        await inputElement?.fill(newColorTextValue);
-        const saveElement = await editElement.$('.attach-icons.md-18.icon-save.btnSave');
-        await saveElement?.click();
+        const editButton = item.locator('.btn-edit');
+        if (!(await editButton.isVisible())) continue;
+        await editButton.click();
+
+        const inputElement = item.locator('input.edit-inp');
+        await inputElement.waitFor({ state: 'visible' });
+        const newColorTextValue = await convertToTraditionalChinese(originalText);
+        await inputElement.fill(newColorTextValue);
+
+        const saveButton = item.locator('.btn-save');
+        await saveButton.click();
+        // Best-effort wait for input to hide back after save
+        await inputElement.waitFor({ state: 'hidden' }).catch(() => {});
     }
 }
 
@@ -133,18 +142,34 @@ export async function setConstant(editPage: Page, config: configType) {
 }
 
 export async function setBarcode(editPage: Page, context: BrowserContext) {
-    const linkClickSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
-    const linkInpuSelector = '#sourceUrl0';
-    const barcodeLinkInput = await editPage.waitForSelector(linkInpuSelector);
-    await editPage.waitForSelector(linkClickSelector);
-    const linkElement = await editPage.$(linkClickSelector);
-    await linkElement.click();
-    const barCodePage = await context.waitForEvent('page');
+    // New UI uses a span with text "访问"; keep legacy anchor as fallback
+    // Try to extract the URL from the new DOM structure, fallback to legacy if needed
+    // 1. Try to find the input[name="sourceUrl"] in the new UI
+    let sourceUrlInput = await editPage.$('input[name="sourceUrl"]');
+    let sourceUrl = null;
+    if (sourceUrlInput) {
+        sourceUrl = await sourceUrlInput.getAttribute('value');
+    }
+
+    // 2. If not found, fallback to legacy link click (old UI)
+    const legacyLinkSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
+    let linkElement = await editPage.$('css=span.suffix >> text=访问');
+    if (!linkElement) linkElement = await editPage.$('span.suffix span:has-text("访问")');
+    if (!linkElement) linkElement = await editPage.$(legacyLinkSelector);
+    if (!linkElement) throw new Error('Unable to locate source link (访问) control');
+
+    // Click the link and wait for the new tab to be fully loaded
+    const [barCodePage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
+    await barCodePage.waitForLoadState('domcontentloaded');
+
     try {
-        // const barCodePage = await context.newPage();
-        // await context.waitForEvent('page');
-        const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
-        const link = await editPage.$eval(linkInpuSelector, (input: HTMLInputElement) => input.value);
+      
+        const barcodeInputElementS = await editPage.locator('input[name="barcode"]:visible');
+        const count = await barcodeInputElementS.count();
+        const barcodeInputElementSArray = [];
+        for (let i = 0; i < count; i++) {
+            barcodeInputElementSArray.push(barcodeInputElementS.nth(i));
+        }
 
         // await handleGoToPage({ page: barCodePage, url: link, isignoreLoaded: true });
 
@@ -240,9 +265,9 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 if (!barcodeAlia) throw new Error('barcode is empty');
 
                 console.log(barcodeAlia);
-                for (const barcodeInput of barcodeInputElementS) {
-                    const inputElement = await barcodeInput.$('input');
-                    if (inputElement) await inputElement.fill(barcodeAlia);
+
+                for (const barcodeInput of barcodeInputElementSArray) {
+                    await barcodeInput.fill(barcodeAlia);
                 }
                 const cookies = await barCodePage.context().cookies();
                 // fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
@@ -254,9 +279,8 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 const barcodeElement = await barCodePage.waitForSelector('text=货号:');
                 const barcode = await (await barcodeElement.innerText()).replace(/\D/g, '');
                 console.log(`barcode: ${barcode}`);
-                for (const barcodeInput of barcodeInputElementS) {
-                    const inputElement = await barcodeInput.$('input');
-                    if (inputElement) await inputElement.fill(barcode);
+                for (const barcodeInput of barcodeInputElementSArray) {
+                    await barcodeInput.fill(barcode);
                 }
                 await barCodePage.close();
                 break;
@@ -266,7 +290,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
     } catch (error) {
         console.log(`set barcode error: ${error}`);
         const pages = await context.pages();
-        await barCodePage.close();
+        await pages[pages.length - 1].close();
 
         throw error;
     }
@@ -305,8 +329,12 @@ export async function setMoney(editPage: Page, config: configType) {
 }
 
 export async function setNameTitle(editPage: Page, SKU: string, config: configType) {
-    const skuInputElementS = await editPage.$$('[data-name="sku"]');
-    const domainName = await getCurrentDoman(editPage);
+    const skuInputElementS = await editPage.locator('input[name="sku"]:visible');
+    const count = await skuInputElementS.count();
+    const skuInputElementSArray = [];
+    for (let i = 0; i < count; i++) {
+        skuInputElementSArray.push(skuInputElementS.nth(i));
+    }
     let newValue = '';
     let newSKU = '【';
 
@@ -314,13 +342,15 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
 
     newSKU += children.前墬.value;
     if (children.SKU取代標題.value) {
-        const barcodeInputElementS = await editPage.$$('[data-name="barcode"]');
-        for (const barcodeInput of barcodeInputElementS) {
-            const inputElement = await barcodeInput.$('input');
-            if (inputElement) {
-                newSKU += `${await inputElement.inputValue()}`;
-                break;
-            }
+        const barcodeInputElementS = await editPage.locator('input[name="barcode"]:visible');
+        const count = await barcodeInputElementS.count();
+        const barcodeInputElementSArray = [];
+        for (let i = 0; i < count; i++) {
+            barcodeInputElementSArray.push(barcodeInputElementS.nth(i));
+        }
+        for (const barcodeInput of barcodeInputElementSArray) {
+            newSKU += `${await barcodeInput.inputValue()}`;
+            break;
         }
     } else if (children.使用機器人編號.value) {
         newSKU += SKU;
@@ -340,19 +370,18 @@ export async function setNameTitle(editPage: Page, SKU: string, config: configTy
     newSKU += children.後墬.value;
     newSKU += '】';
 
-    const headerSelector = '#title';
-    const titleElement = await editPage.waitForSelector(headerSelector);
-    const titleValue = await titleElement.inputValue();
+    const titleInput = editPage.locator('input#title:visible');
+    const titleValue = await titleInput.inputValue();
 
     if (!titleValue.match(/【[^【】]+】/g)) newValue = newSKU + titleValue.replace(/【|】/g, '');
     else newValue = titleValue.replace(/【[^【】]+】/g, newSKU);
     // set title vlaue
-    await titleElement.fill(newValue);
+    await titleInput.fill(newValue);
 
-    for (const sku of skuInputElementS) {
-        const inputElement = await sku.$('input');
-        if (inputElement) await inputElement.fill(newSKU.replace(/【|】/g, ''));
+    for (const sku of skuInputElementSArray) {
+        await sku.fill(newSKU.replace(/【|】/g, ''));
     }
+
     config.routineState.F.children.號碼.value++;
 }
 
