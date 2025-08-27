@@ -1,4 +1,4 @@
-import { BrowserContext, Page } from 'playwright';
+import { BrowserContext, Page, Locator } from 'playwright';
 import { downloadImage } from '../../utils/image';
 import * as fs from 'fs';
 import { AliaRoute, exportPath } from '../../config/base';
@@ -6,6 +6,37 @@ import { app } from 'electron';
 import path from 'path';
 import { downloadState as downloadStateType } from '../../config/base';
 import { getCurrentDoman } from '../filterHandle';
+
+// Ensure filename-safe and non-empty values
+const sanitizeForFileName = (raw: string): string => {
+    const trimmed = (raw || '').trim();
+    // Remove reserved characters and collapse whitespace
+    const sanitized = trimmed
+        .replace(/[\\/:*?"<>|]/g, '')
+        .replace(/[\r\n\t]+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    return sanitized;
+};
+
+// Wait until the input's value is non-empty, trying for up to timeoutMs
+const waitForNonEmptyInputValue = async (
+    page: Page,
+    locator: Locator,
+    timeoutMs: number = 5000,
+): Promise<string> => {
+    const start = Date.now();
+    let value = '';
+    while (Date.now() - start < timeoutMs) {
+        try {
+            await locator.waitFor({ state: 'visible', timeout: Math.max(200, timeoutMs - (Date.now() - start)) });
+            value = (await locator.inputValue())?.trim();
+            if (value) return value;
+        } catch {}
+        await page.waitForTimeout(150);
+    }
+    return (value || '').trim();
+};
 
 export const startDownloadImageProcess = async (
     editPage: Page,
@@ -15,20 +46,65 @@ export const startDownloadImageProcess = async (
     console.log('start download image process');
 
     let titleValue = 'Edit';
+    await editPage.waitForLoadState('domcontentloaded');
+    try {
+        await editPage.waitForLoadState('networkidle', { timeout: 2000 });
+    } catch {}
     const showMoreBtn = await editPage.$('span.link.view-more:has-text("查看更多")');
 
-    // here is change title value
-    if (downloadState.isSEOCode.enable) {
-        const seoSpanElm = await editPage.waitForSelector('#seoSpan');
-        await seoSpanElm.click();
+    // Resolve titleValue robustly
+    try {
+        if (downloadState.isSEOCode.enable) {
+            try {
+                const seoSpanElm = await editPage.waitForSelector('#seoSpan', { timeout: 5000 });
+                await seoSpanElm.click();
+            } catch {}
 
-        const URLInputElm = await editPage.waitForSelector('#shopifyApiName');
-        titleValue = await URLInputElm.inputValue();
-    } else {
-        const titleInput = editPage.locator('input#title:visible');
-        await titleInput.waitFor();
-        titleValue = await titleInput.inputValue();
+            // Primary SEO input
+            const seoPrimary = editPage.locator('#shopifyApiName');
+            titleValue = await waitForNonEmptyInputValue(editPage, seoPrimary, 4000);
+
+            // Fallback SEO input
+            if (!titleValue) {
+                const seoAlt = editPage.locator('#seoTitle');
+                titleValue = await waitForNonEmptyInputValue(editPage, seoAlt, 3000);
+            }
+        } else {
+            // Primary Title input
+            const titlePrimary = editPage.locator('input#title:visible');
+            titleValue = await waitForNonEmptyInputValue(editPage, titlePrimary, 5000);
+
+            // Fallback Title input
+            if (!titleValue) {
+                const titleAlt = editPage.locator('input[name="title"]');
+                titleValue = await waitForNonEmptyInputValue(editPage, titleAlt, 3000);
+            }
+        }
+
+        // Last-resort: scrape from DOM text if still empty
+        if (!titleValue) {
+            titleValue = await editPage.evaluate(() => {
+                const inputSelectors = ['#shopifyApiName', '#seoTitle', 'input#title', 'input[name="title"]'];
+                for (const sel of inputSelectors) {
+                    const el = document.querySelector(sel) as HTMLInputElement | null;
+                    const val = el?.value?.trim();
+                    if (val) return val;
+                }
+                const textSelectors = ['.product-title', '.edit-title', 'h1', 'h2', 'title'];
+                for (const sel of textSelectors) {
+                    const el = document.querySelector(sel);
+                    const txt = (el?.textContent || '').trim();
+                    if (txt) return txt;
+                }
+                return '';
+            });
+        }
+    } catch (err) {
+        console.warn('Failed to resolve title from DOM, using fallback.', err);
     }
+
+    titleValue = sanitizeForFileName(titleValue);
+    if (!titleValue) titleValue = `Edit-${Date.now()}`;
 
     const targetPath = `${exportPath.downloadImagePackage}/${titleValue}`;
 
@@ -69,13 +145,13 @@ export const startDownloadImageProcess = async (
         downloadImage(imageUrl, index + 1, filePath, downloadState.isResize.enable),
     );
     // 1. CLICK "访问" and WAIT for the new page (popup) - support new and legacy UI
-    let linkElement = await editPage.$('css=span.suffix >> text=访问');
-    if (!linkElement) linkElement = await editPage.$('span.suffix span:has-text("访问")');
-    if (!linkElement)
-        linkElement = await editPage.$('.source-url-info .input-group > div.input-group-addon:nth-of-type(2) a');
-    if (!linkElement)
-        linkElement = await editPage.$('a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span');
-    if (!linkElement) throw new Error('Unable to locate source link (访问) control');
+    // let linkElement = await editPage.$('css=span.suffix >> text=访问');
+    // if (!linkElement) linkElement = await editPage.$('span.suffix span:has-text("访问")');
+    // if (!linkElement)
+    //     linkElement = await editPage.$('.source-url-info .input-group > div.input-group-addon:nth-of-type(2) a');
+    // if (!linkElement)
+    //     linkElement = await editPage.$('a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span');
+    // if (!linkElement) throw new Error('Unable to locate source link (访问) control');
 
     // 2) Click + wait for the popup page:
     // const [videoPage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
