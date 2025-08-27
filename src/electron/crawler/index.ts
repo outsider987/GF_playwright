@@ -63,9 +63,10 @@ export async function run(args: {
                 page,
                 url: isShope
                     ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
-                    : 'https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft',
+                    : 'https://www.dianxiaomi.com/web/shopifyProduct/online',
                 isignoreLoaded: true,
             });
+           
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
             await page.goto('https://www.dianxiaomi.com/index.htm');
@@ -100,9 +101,10 @@ export async function run(args: {
             fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
 
             await page.goto('https://www.dianxiaomi.com/web/shopifyProduct/online');
+            await page.waitForLoadState('networkidle');
         }
         // await SelectAllEdit(page);
-
+        await page.waitForLoadState('domcontentloaded');
         isShope
             ? await startShopeEditPage(page, context, { routineState, globalState })
             : await startEditPage(page, context, { routineState, globalState, downloadState });

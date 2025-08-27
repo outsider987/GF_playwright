@@ -40,13 +40,14 @@ export const handleCloseModal = async (page: Page) => {
     const tBodySelector = '#shopifySysMsg';
 
     const MAX_ATTEMPTS = 5; // Maximum number of attempts to close the modal
-    const INTERVAL = 2000; // Interval between attempts (in milliseconds)
+    const INTERVAL = 5000; // Interval between attempts (in milliseconds)
 
     let attempts = 0;
     let modalClosed = false;
-
+    await page.reload();
     while (!modalClosed && attempts < MAX_ATTEMPTS) {
         await Sleep(INTERVAL);
+        // await page.reload();
         console.log('Attempt to close modal:', attempts + 1);
         // Try to find the close button by its class or by its button attributes
         let closeBtn = await page.$('.close');

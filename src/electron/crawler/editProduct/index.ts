@@ -28,7 +28,6 @@ export async function startEditPage(
     try {
         const tBodySelector = 'div .table-section';
         const headerSelector = '#title';
-
         await handleCloseModal(page);
         if (config.globalState.target !== '' && config.globalState.subTarget !== '')
             await openOnlineProduct(page, context, config.globalState);
