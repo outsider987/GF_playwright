@@ -40,7 +40,7 @@ export const handleCloseModal = async (page: Page) => {
     const tBodySelector = '#shopifySysMsg';
 
     const MAX_ATTEMPTS = 5; // Maximum number of attempts to close the modal
-    const INTERVAL = 1000; // Interval between attempts (in milliseconds)
+    const INTERVAL = 2000; // Interval between attempts (in milliseconds)
 
     let attempts = 0;
     let modalClosed = false;
@@ -49,14 +49,10 @@ export const handleCloseModal = async (page: Page) => {
         await Sleep(INTERVAL);
         console.log('Attempt to close modal:', attempts + 1);
         // Try to find the close button by its class or by its button attributes
-        // Try to find the close button inside the modal-footer with the specified attributes and text
-        let closeBtn = await page.$('div.modal-footer > button.button.btn-gray[type="button"][data-dismiss="modal"][onclick="loadNotice(false)"]');
-        if (closeBtn) {
-            // Optionally, verify the button text is "关闭" (Close)
-            const btnText = (await closeBtn.innerText()).trim();
-            if (btnText !== '关闭') {
-                closeBtn = null;
-            }
+        let closeBtn = await page.$('.close');
+        if (!closeBtn) {
+            // Try to find the button by its text content and attributes as a fallback
+            closeBtn = await page.$('button.btn-gray[type="button"][data-dismiss="modal"][onclick="loadNotice(false)"]');
         }
         if (closeBtn && (await closeBtn.isVisible())) {
             await closeBtn.click();

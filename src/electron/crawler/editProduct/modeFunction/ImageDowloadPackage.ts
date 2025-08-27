@@ -78,27 +78,27 @@ export const startDownloadImageProcess = async (
     if (!linkElement) throw new Error('Unable to locate source link (访问) control');
 
     // 2) Click + wait for the popup page:
-    const [videoPage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
-    console.log('videoPage', videoPage);
-    await videoPage.waitForLoadState('domcontentloaded');
+    // const [videoPage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
+    // console.log('videoPage', videoPage);
+    // await videoPage.waitForLoadState('domcontentloaded');
 
-    // 2. SELECT the <video> and EXTRACT its src
-    const videoElm = await videoPage.waitForSelector('video.lib-video');
-    const rawSrc = await videoElm.getAttribute('src');
-    if (!rawSrc) throw new Error('Could not find video src!');
-    const videoUrl = rawSrc.startsWith('http') ? rawSrc : `https:${rawSrc}`;
+    // // 2. SELECT the <video> and EXTRACT its src
+    // const videoElm = await videoPage.waitForSelector('video.lib-video');
+    // const rawSrc = await videoElm.getAttribute('src');
+    // if (!rawSrc) throw new Error('Could not find video src!');
+    // const videoUrl = rawSrc.startsWith('http') ? rawSrc : `https:${rawSrc}`;
 
-    // 3. FETCH & SAVE the video file
-    const resp = await videoPage.request.get(videoUrl);
-    if (!resp.ok()) throw new Error(`Video download failed: ${resp.status()}`);
-    const buffer = await resp.body();
+    // // 3. FETCH & SAVE the video file
+    // const resp = await videoPage.request.get(videoUrl);
+    // if (!resp.ok()) throw new Error(`Video download failed: ${resp.status()}`);
+    // const buffer = await resp.body();
 
-    const downloadDir = path.join(documentsPath, exportPath.downloadImagePackage, titleValue);
-    const videoPath = path.join(downloadDir, 'video.mp4');
-    fs.writeFileSync(videoPath, buffer);
-    await videoPage.close();
+    // const downloadDir = path.join(documentsPath, exportPath.downloadImagePackage, titleValue);
+    // const videoPath = path.join(downloadDir, 'video.mp4');
+    // fs.writeFileSync(videoPath, buffer);
+    // await videoPage.close();
 
-    console.log(`✅ Video saved to ${videoPath}`);
+    // console.log(`✅ Video saved to ${videoPath}`);
     await Promise.all(downloadPromises)
         .then((results) => {
             console.log(`Downloaded ${results.length} images:`);
