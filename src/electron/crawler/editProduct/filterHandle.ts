@@ -1,4 +1,4 @@
-import { BrowserContext, Page } from 'playwright';
+import { BrowserContext, Page, ElementHandle } from 'playwright';
 import { exportPath, sensitiveWord } from '../config/base';
 import { Sleep } from '../utils/utils';
 import { globalState as globalConfigType } from '../config/base';
@@ -31,23 +31,48 @@ export const getDuplicatedIndexs = (texts: string[]) => {
 };
 
 export const openOnlineProduct = async (page: Page, context: BrowserContext, globalState: typeof globalConfigType) => {
-    const onlineProduct = await page.$('#productOnlineTree');
+    await page.waitForSelector('.categories-filter', { state: 'attached', timeout: 15000 });
 
-    const collpaseElements = await onlineProduct.$$('.outDiv.node_top');
-    for (const [index, collpase] of collpaseElements.entries()) {
-        const label = await (await collpase.$('div')).innerText();
-        const aTag = await collpase.$('a');
-        if (aTag && (await aTag.isVisible()) && label === globalState.target) {
-            await aTag.click();
+    const categoriesFilters = await page.$$('.categories-filter');
+    if (!categoriesFilters || categoriesFilters.length === 0) {
+        throw new Error("'.categories-filter' not found on page");
+    }
+
+    const onlineProduct = categoriesFilters.length > 1 ? categoriesFilters[1] : categoriesFilters[0];
+    // Find the specific category item whose label equals target, expand if collapsed
+    const categoryItems = await onlineProduct.$$('.categories-item');
+    let targetItem: ElementHandle<HTMLElement> | null = null;
+
+    for (const item of categoryItems) {
+        const labelDiv = await item.$('div');
+        if (!labelDiv) continue;
+        const labelText = (await labelDiv.innerText()).trim();
+        if (labelText === globalState.target) {
+            targetItem = item as ElementHandle<HTMLElement>;
+            const classAttr = await item.getAttribute('class');
+            if (classAttr && classAttr.includes('is-collapsed')) {
+                const icon = await item.$('.fold-icon');
+                if (icon) {
+                    await icon.click();
+                    await Sleep(300);
+                }
+            }
+            break;
         }
     }
 
-    const elementClicks = await onlineProduct.$$(`div.myj_tree_node[title="${globalState.subTarget}"]`);
-    for (const elementClick of elementClicks) {
-        if (await elementClick.isVisible()) {
+    if (!targetItem) {
+        throw new Error(`categories-item for target "${globalState.target}" not found`);
+    }
+
+    const subItems = await targetItem.$$('.label-op-area');
+
+    for (const elementClick of subItems) {
+        if ((await elementClick.isVisible()) && globalState.subTarget === (await elementClick.innerText()).trim()) {
             await elementClick.click();
             const response = await context.waitForEvent('response');
             await Sleep(1000);
         }
     }
+    console.log('open online product');
 };

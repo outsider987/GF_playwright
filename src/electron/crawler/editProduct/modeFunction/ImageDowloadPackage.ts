@@ -15,7 +15,7 @@ export const startDownloadImageProcess = async (
     console.log('start download image process');
 
     let titleValue = 'Edit';
-    const showMoreBtn = await editPage.$('#showMoreImg');
+    const showMoreBtn = await editPage.$('span.link.view-more:has-text("查看更多")');
 
     // here is change title value
     if (downloadState.isSEOCode.enable) {
@@ -25,22 +25,37 @@ export const startDownloadImageProcess = async (
         const URLInputElm = await editPage.waitForSelector('#shopifyApiName');
         titleValue = await URLInputElm.inputValue();
     } else {
-        const headerSelector = '#title';
-        const titleElement = await editPage.waitForSelector(headerSelector);
-        titleValue = await titleElement.inputValue();
+        const titleInput = editPage.locator('input#title:visible');
+        await titleInput.waitFor();
+        titleValue = await titleInput.inputValue();
     }
 
     const targetPath = `${exportPath.downloadImagePackage}/${titleValue}`;
 
     if (showMoreBtn && (await showMoreBtn.isVisible())) await showMoreBtn.click();
-    await editPage.waitForSelector('.imgDivIn');
-    const imageDivElements = await editPage.$$('.imgDivIn');
-    const urls = [];
+    // New UI: images are under .img-list as <img class="img-css"> inside each .single-image.img-item
+    // Fallback to legacy .imgDivIn if the new structure is not present
+    const urls: string[] = [];
+    let newUiDetected = false;
+    try {
+        await editPage.waitForSelector('.img-list .single-image.img-item img.img-css', { timeout: 5000 });
+        newUiDetected = true;
+    } catch {}
 
-    for (const image of imageDivElements) {
-        const imageElement = await image.$('img');
-        const url = await imageElement.getAttribute('src');
-        if (url) urls.push(url);
+    if (newUiDetected) {
+        const imageElements = await editPage.$$('.img-list .single-image.img-item img.img-css');
+        for (const imageElement of imageElements) {
+            const src = await imageElement.getAttribute('src');
+            if (src) urls.push(src.startsWith('http') ? src : `https:${src}`);
+        }
+    } else {
+        await editPage.waitForSelector('.imgDivIn');
+        const imageDivElements = await editPage.$$('.imgDivIn');
+        for (const image of imageDivElements) {
+            const imageElement = await image.$('img');
+            const url = await imageElement?.getAttribute('src');
+            if (url) urls.push(url.startsWith('http') ? url : `https:${url}`);
+        }
     }
     const documentsPath = app ? app.getPath('documents') : './';
 
@@ -53,11 +68,17 @@ export const startDownloadImageProcess = async (
     const downloadPromises = urls.map((imageUrl, index) =>
         downloadImage(imageUrl, index + 1, filePath, downloadState.isResize.enable),
     );
-    // 1. CLICK "访 问" and WAIT for the new page (popup)
-    const visitLinkSelector = '.source-url-info .input-group > div.input-group-addon:nth-of-type(2) a';
+    // 1. CLICK "访问" and WAIT for the new page (popup) - support new and legacy UI
+    let linkElement = await editPage.$('css=span.suffix >> text=访问');
+    if (!linkElement) linkElement = await editPage.$('span.suffix span:has-text("访问")');
+    if (!linkElement)
+        linkElement = await editPage.$('.source-url-info .input-group > div.input-group-addon:nth-of-type(2) a');
+    if (!linkElement)
+        linkElement = await editPage.$('a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span');
+    if (!linkElement) throw new Error('Unable to locate source link (访问) control');
 
     // 2) Click + wait for the popup page:
-    const [videoPage] = await Promise.all([context.waitForEvent('page'), editPage.click(visitLinkSelector)]);
+    const [videoPage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
     console.log('videoPage', videoPage);
     await videoPage.waitForLoadState('domcontentloaded');
 

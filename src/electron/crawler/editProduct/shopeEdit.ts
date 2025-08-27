@@ -1,5 +1,5 @@
 import { Browser, BrowserContext, Page } from 'playwright';
-import { handleClodeModal, handleGoToPage } from '../utils/handler';
+import { handleCloseModal, handleGoToPage } from '../utils/handler';
 import { convertToTraditionalChinese, Sleep } from '../utils/utils';
 import moment from 'moment';
 import {
@@ -28,7 +28,7 @@ export async function startShopeEditPage(
         const tBodySelector = 'div .table-section';
         const headerSelector = '#title';
 
-        await handleClodeModal(page);
+        await handleCloseModal(page);
         // if (config.globalState.target !== '' && config.globalState.subTarget !== '')
         //     await openOnlineProduct(page, context, config.globalState);
         // const draftDivElement = await page.waitForSelector('#draftDiv');

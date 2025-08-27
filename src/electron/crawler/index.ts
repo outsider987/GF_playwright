@@ -2,7 +2,7 @@ import { chromium, Browser, Page, firefox, webkit } from 'playwright';
 // import dotenv from 'dotenv';
 
 import { startEditPage } from './editProduct';
-import { handleClodeModal, handleGoToPage } from './utils/handler';
+import { handleCloseModal, handleGoToPage } from './utils/handler';
 import {
     globalState as globalConfigType,
     exportPath,
@@ -99,7 +99,7 @@ export async function run(args: {
             }
             fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
 
-            await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
+            await page.goto('https://www.dianxiaomi.com/web/shopifyProduct/online');
         }
         // await SelectAllEdit(page);
 

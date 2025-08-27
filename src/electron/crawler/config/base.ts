@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: false,
     saveMode: true,
-    mode: mode.routine,
+    mode: mode.downloadImagePackage,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: 'LEMON',
+    subTarget: '20250827',
 };
 
 export const routineState = {
