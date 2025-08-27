@@ -42,6 +42,13 @@ export async function run(args: {
         // Disable request interception to prevent breaking websites that rely on CSP
         bypassCSP: true,
     });
+    // Prevent DXM product notice modal from appearing at all
+    try {
+        await context.addInitScript(() => {
+            (window as any).loadNotice = () => false;
+        });
+        await context.route('**/notice/showNotice.htm**', (route) => route.abort());
+    } catch {}
     try {
         const isShope = globalState.mode === 'shope';
         const page: Page = await context.newPage();
@@ -66,6 +73,7 @@ export async function run(args: {
                     : 'https://www.dianxiaomi.com/web/shopifyProduct/online',
                 isignoreLoaded: true,
             });
+            await handleCloseModal(page);
            
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
@@ -101,10 +109,12 @@ export async function run(args: {
             fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
 
             await page.goto('https://www.dianxiaomi.com/web/shopifyProduct/online');
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
+            
         }
         // await SelectAllEdit(page);
         await page.waitForLoadState('domcontentloaded');
+        await handleCloseModal(page);
         isShope
             ? await startShopeEditPage(page, context, { routineState, globalState })
             : await startEditPage(page, context, { routineState, globalState, downloadState });
