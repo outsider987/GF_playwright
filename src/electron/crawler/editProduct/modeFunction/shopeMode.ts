@@ -52,6 +52,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
         });
 
         console.log('[startShopeMode] Waiting for domcontentloaded at', editPage.url());
+        await Sleep(1000);
         await editPage.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
         console.log('[startShopeMode] Proceeding to wait for key form fields');
         // Updated selector: new DOM uses Ant Design form structure without #productName
@@ -101,6 +102,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
             await editPage.close();
             return false;
         }
+        await Sleep(1000);
         const key = (await titleElement.inputValue()).match(/\【(.*?)\】/);
         if (!key) {
             await editPage.close();

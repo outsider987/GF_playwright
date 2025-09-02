@@ -70,7 +70,7 @@ export async function run(args: {
                 page,
                 url: isShope
                     ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
-                    : 'https://www.dianxiaomi.com/web/shopifyProduct/online',
+                    : 'https://www.dianxiaomi.com/web/shopifyProduct/draft',
                 isignoreLoaded: true,
             });
             await handleCloseModal(page);
@@ -100,17 +100,39 @@ export async function run(args: {
             const loginBtnField = await page.$(loginBtn);
             const validateField = await page.$(validateSelector);
 
-            await page.waitForNavigation({ timeout: 600000 });
+            // Wait for user to complete login manually
+            console.log('Waiting for user to complete login...');
+            console.log('Please enter your credentials and complete the login process');
+            
+            // Wait for navigation after login (indicating successful login)
+            await page.waitForNavigation({ 
+                timeout: 0, // No timeout - wait indefinitely for user to login
+                waitUntil: 'networkidle' 
+            });
 
+            // Wait a bit more to ensure login is fully processed
+            await page.waitForTimeout(2000);
+
+            // Verify we're logged in by checking if we're redirected to a logged-in page
+            const currentUrl = page.url();
+            if (currentUrl.includes('index.htm') || currentUrl.includes('login')) {
+                throw new Error('Login failed or incomplete. Please check your credentials.');
+            }
+
+            console.log('Login successful, saving cookies...');
             const cookies = await page.context().cookies();
             if (!fs.existsSync(`${cookiePath}`)) {
                 fs.mkdirSync(`${cookiePath}`);
             }
             fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
 
-            await page.goto('https://www.dianxiaomi.com/web/shopifyProduct/online');
-            await page.waitForLoadState('domcontentloaded');
+            // Navigate to the appropriate page after successful login
+            const targetUrl = isShope
+                ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
+                : 'https://www.dianxiaomi.com/web/shopifyProduct/draft';
             
+            await page.goto(targetUrl);
+            await page.waitForLoadState('domcontentloaded');
         }
         // await SelectAllEdit(page);
         await page.waitForLoadState('domcontentloaded');
