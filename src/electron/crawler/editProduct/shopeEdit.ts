@@ -19,6 +19,76 @@ import * as fs from 'fs';
 import { configPath } from '../../config/base';
 import { startShopeMode } from './modeFunction/shopeMode';
 
+// Function to scroll and load all elements
+async function scrollToLoadAllElements(page: Page, container: any, selector: string): Promise<void> {
+    let previousCount = 0;
+    let currentCount = 0;
+    let scrollAttempts = 0;
+    const maxScrollAttempts = 15;
+    let noNewElementsCount = 0;
+    
+    console.log('[scrollToLoadAllElements] Starting to scroll and load all elements...');
+    
+    do {
+        previousCount = currentCount;
+        
+        // Get current count of elements
+        currentCount = await container.$$(selector).then((elements: any[]) => elements.length);
+        console.log(`[scrollToLoadAllElements] Found ${currentCount} elements (attempt ${scrollAttempts + 1})`);
+        
+        if (currentCount > previousCount) {
+            // New elements found, reset no new elements counter
+            noNewElementsCount = 0;
+            console.log(`[scrollToLoadAllElements] Found ${currentCount - previousCount} new elements`);
+            
+            // Scroll to the last element to trigger more loading
+            const elements = await container.$$(selector);
+            if (elements.length > 0) {
+                const lastElement = elements[elements.length - 1];
+                await lastElement.scrollIntoViewIfNeeded();
+                await Sleep(1500); // Wait for potential lazy loading
+            }
+        } else {
+            // No new elements found this round
+            noNewElementsCount++;
+            console.log(`[scrollToLoadAllElements] No new elements found (${noNewElementsCount}/3)`);
+            
+            // Try different scrolling strategies
+            if (noNewElementsCount === 1) {
+                // Strategy 1: Scroll the container
+                await container.evaluate((el: Element) => {
+                    el.scrollTop = el.scrollHeight;
+                });
+                await Sleep(1500);
+            } else if (noNewElementsCount === 2) {
+                // Strategy 2: Scroll the page
+                await page.evaluate(() => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
+                await Sleep(1500);
+            } else {
+                // Strategy 3: Try clicking "Load More" or pagination if exists
+                try {
+                    const loadMoreBtn = await page.$('button:has-text("加载更多"), button:has-text("Load More"), .load-more, .pagination-next');
+                    if (loadMoreBtn && await loadMoreBtn.isVisible()) {
+                        console.log('[scrollToLoadAllElements] Found load more button, clicking...');
+                        await loadMoreBtn.click();
+                        await Sleep(2000);
+                        noNewElementsCount = 0; // Reset counter after clicking load more
+                    }
+                } catch (e) {
+                    console.log('[scrollToLoadAllElements] No load more button found');
+                }
+            }
+        }
+        
+        scrollAttempts++;
+        
+    } while ((currentCount > previousCount || noNewElementsCount < 3) && scrollAttempts < maxScrollAttempts);
+    
+    console.log(`[scrollToLoadAllElements] Finished scrolling. Total elements found: ${currentCount} after ${scrollAttempts} attempts`);
+}
+
 export async function startShopeEditPage(
     page: Page,
     context: BrowserContext,
@@ -52,18 +122,44 @@ export async function startShopeEditPage(
         console.log('start wait and collect edit with list');
         await bodyElement.waitForSelector('a:text("编辑")');
 
+        // Scroll to load all edit elements
+        console.log('[shopeEdit] Scrolling to load all edit elements...');
+        await scrollToLoadAllElements(page, bodyElement, 'a:text("编辑")');
+
+        // Final verification - wait a bit more and get final count
+        await Sleep(2000);
         const edits = await bodyElement.$$('a:text("编辑")');
+        
+        // Double-check by scrolling to the very bottom one more time
+        if (edits.length > 0) {
+            const lastEdit = edits[edits.length - 1];
+            await lastEdit.scrollIntoViewIfNeeded();
+            await Sleep(1000);
+        }
+        
+        // Get final count after all scrolling
+        const finalEdits = await bodyElement.$$('a:text("编辑")');
+        console.log(`[shopeEdit] Final count: ${finalEdits.length} edit elements found`);
 
-        console.log('start loop edit');
+        console.log(`[shopeEdit] Starting loop with ${finalEdits.length} edits to process`);
 
-        for (const [index, edit] of edits.entries()) {
-            const newEdit = await edits[index];
+        for (const [index, edit] of finalEdits.entries()) {
+            console.log(`[shopeEdit] Processing edit ${index + 1}/${finalEdits.length}`);
+            const newEdit = await finalEdits[index];
 
-            if (await !newEdit.isVisible()) continue;
+            if (await !newEdit.isVisible()) {
+                console.log(`[shopeEdit] Edit ${index + 1} is not visible, skipping`);
+                continue;
+            }
             await newEdit.click();
 
             const editPage = await context.waitForEvent('page');
-            if (!(await startShopeMode(editPage, context))) continue;
+            console.log(`[shopeEdit] Edit page opened for edit ${index + 1}, starting shopeMode`);
+            if (!(await startShopeMode(editPage, context))) {
+                console.log(`[shopeEdit] startShopeMode failed for edit ${index + 1}, closing page and continuing`);
+                await editPage.close();
+                continue;
+            }
 
             if (config.globalState.saveMode) {
                 console.log('start save');

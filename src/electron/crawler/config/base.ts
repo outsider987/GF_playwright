@@ -25,7 +25,7 @@ export const globalState = {
     count: 1,
     debug: false,
     saveMode: true,
-    mode: mode.routine,
+    mode: mode.shope,
     isRunning: false,
     target: '',
     subTarget: '',

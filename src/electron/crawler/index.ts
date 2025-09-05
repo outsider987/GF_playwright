@@ -8,6 +8,7 @@ import {
     exportPath,
     routineState as initialRoutineStateType,
     downloadState as downloadStateType,
+    mode,
 } from './config/base';
 import * as fs from 'fs';
 import { configPath } from '../config/base';
@@ -69,12 +70,12 @@ export async function run(args: {
             await handleGoToPage({
                 page,
                 url: isShope
-                    ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
-                    : 'https://www.dianxiaomi.com/web/shopifyProduct/draft',
+                    ? `https://www.dianxiaomi.com/web/shopeeSite/draft`
+                    : `https://www.dianxiaomi.com/web/shopifyProduct/${path}`,
                 isignoreLoaded: true,
             });
             await handleCloseModal(page);
-           
+
             // await page.goto('https://www.dianxiaomi.com/shopifyProduct/draft.htm?dxmState=draft');
         } else {
             await page.goto('https://www.dianxiaomi.com/index.htm');
@@ -103,11 +104,11 @@ export async function run(args: {
             // Wait for user to complete login manually
             console.log('Waiting for user to complete login...');
             console.log('Please enter your credentials and complete the login process');
-            
+
             // Wait for navigation after login (indicating successful login)
-            await page.waitForNavigation({ 
+            await page.waitForNavigation({
                 timeout: 0, // No timeout - wait indefinitely for user to login
-                waitUntil: 'networkidle' 
+                waitUntil: 'networkidle',
             });
 
             // Wait a bit more to ensure login is fully processed
@@ -130,7 +131,7 @@ export async function run(args: {
             const targetUrl = isShope
                 ? `https://www.dianxiaomi.com/shopeeProduct/index.htm?dxmState=online`
                 : 'https://www.dianxiaomi.com/web/shopifyProduct/draft';
-            
+
             await page.goto(targetUrl);
             await page.waitForLoadState('domcontentloaded');
         }

@@ -34,22 +34,21 @@ async function saveDebugArtifacts(editPage: Page, tag: string, extraInfo?: strin
     }
 }
 
-export const startShopeMode = async (editPage: Page, context: BrowserContext): Promise<boolean> => {
+export const startShopeMode = async (editPage: Page, context: BrowserContext, retryCount: number = 0): Promise<boolean> => {
     await Sleep(1000);
-    let tryCound = 0;
     try {
         // Attach lightweight listeners for diagnostics
-        editPage.on('console', (msg) => {
-            try {
-                console.log(`[page console ${msg.type()}]`, msg.text());
-            } catch {}
-        });
-        editPage.on('pageerror', (err) => {
-            console.log('[page error]', err?.message || err);
-        });
-        editPage.on('requestfailed', (req) => {
-            console.log('[request failed]', req.url(), req.failure()?.errorText);
-        });
+        // editPage.on('console', (msg) => {
+        //     try {
+        //         console.log(`[page console ${msg.type()}]`, msg.text());
+        //     } catch {}
+        // });
+        // editPage.on('pageerror', (err) => {
+        //     console.log('[page error]', err?.message || err);
+        // });
+        // editPage.on('requestfailed', (req) => {
+        //     console.log('[request failed]', req.url(), req.failure()?.errorText);
+        // });
 
         console.log('[startShopeMode] Waiting for domcontentloaded at', editPage.url());
         await Sleep(1000);
@@ -202,7 +201,7 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
                         const body = await frame.$('body');
                         if (body) {
                             const existingContent = await body.innerHTML();
-                            const newContent = `<h3 style="text-align: center;">${content.replace(/\n/g, '<br>')}</h3>${existingContent}`;
+                            const newContent = `${content.replace(/\n/g, '<br/>')}${existingContent}<br/>`;
                             await frame.evaluate((content) => {
                                 document.body.innerHTML = content;
                             }, newContent);
@@ -215,18 +214,20 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext): P
 
         return true;
     } catch (error) {
-        console.log('[startShopeMode] Error occurred:', error);
+        console.log(`[startShopeMode] Error occurred (retry ${retryCount}/5):`, error);
         await saveDebugArtifacts(
             editPage,
             'startShopeMode-failure',
             error instanceof Error ? `${error.name}: ${error.message}` : String(error),
         ).catch(() => {});
-        tryCound++;
-        if (tryCound > 5) {
+        
+        if (retryCount >= 5) {
+            console.log('[startShopeMode] Max retries reached, closing page and returning false');
             await editPage.close();
-            throw 'failed startShopeMode';
+            return false;
         }
 
-        return await startShopeMode(editPage, context);
+        console.log(`[startShopeMode] Retrying... (${retryCount + 1}/5)`);
+        return await startShopeMode(editPage, context, retryCount + 1);
     }
 };
