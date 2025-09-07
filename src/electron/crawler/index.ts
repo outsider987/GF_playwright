@@ -67,11 +67,13 @@ export async function run(args: {
                 await context.addCookies(aliasCookies);
             }
 
+            const rootPath = globalState.mode === 'routine' ? 'draft' : 'online';
+
             await handleGoToPage({
                 page,
                 url: isShope
                     ? `https://www.dianxiaomi.com/web/shopeeSite/draft`
-                    : `https://www.dianxiaomi.com/web/shopifyProduct/${path}`,
+                    : `https://www.dianxiaomi.com/web/shopifyProduct/${rootPath}`,
                 isignoreLoaded: true,
             });
             await handleCloseModal(page);
