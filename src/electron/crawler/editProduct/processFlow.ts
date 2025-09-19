@@ -141,17 +141,23 @@ export async function setConstant(editPage: Page, config: configType) {
     }
 }
 
+// Pseudocode plan for robust slider detection and handling:
+// 1. After opening the barCodePage, check for the presence and visibility of the slider (Aliyun/Alibaba anti-bot).
+// 2. If present, try to robustly detect when the slider is ready (wait for selector, check bounding box, etc).
+// 3. Use Playwright's drag-and-drop or mouse events to move the slider all the way to the right.
+// 4. Add retries and error handling for common failures (slider not visible, bounding box null, drag fails, etc).
+// 5. If slider is not present, proceed as normal.
+// 6. After passing the slider, continue to extract the barcode as before.
+
 export async function setBarcode(editPage: Page, context: BrowserContext) {
-    // New UI uses a span with text "访问"; keep legacy anchor as fallback
-    // Try to extract the URL from the new DOM structure, fallback to legacy if needed
-    // 1. Try to find the input[name="sourceUrl"] in the new UI
+    // Try to find the input[name="sourceUrl"] in the new UI
     let sourceUrlInput = await editPage.$('input[name="sourceUrl"]');
     let sourceUrl = null;
     if (sourceUrlInput) {
         sourceUrl = await sourceUrlInput.getAttribute('value');
     }
 
-    // 2. If not found, fallback to legacy link click (old UI)
+    // Fallback to legacy link click (old UI)
     const legacyLinkSelector = 'a[href="javascript:"][onclick="jumpSourceUrl(this);"] > span';
     let linkElement = await editPage.$('css=span.suffix >> text=访问');
     if (!linkElement) linkElement = await editPage.$('span.suffix span:has-text("访问")');
@@ -163,7 +169,6 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
     await barCodePage.waitForLoadState('domcontentloaded');
 
     try {
-      
         const barcodeInputElementS = await editPage.locator('input[name="barcode"]:visible');
         const count = await barcodeInputElementS.count();
         const barcodeInputElementSArray = [];
@@ -171,73 +176,95 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
             barcodeInputElementSArray.push(barcodeInputElementS.nth(i));
         }
 
-        // await handleGoToPage({ page: barCodePage, url: link, isignoreLoaded: true });
-
         const url = await barCodePage.url();
         const domain = new URL(url);
         const domainName = domain.hostname.replace('www.', '');
+
         switch (domainName) {
-            case targetUrl.Alia:
+            case targetUrl.Alia: {
                 const spanSelector =
                     'div.offer-attr-item span.offer-attr-item-name:has-text("货号") + span.offer-attr-item-value';
                 const sliderSelector = '#nc_1_n1z';
+                const sliderBoxSelector = '#nc_1__scale_text';
 
-                await Sleep(2000);
-                // await barCodePage.waitForLoadState('networkidle');
-                await barCodePage.$(sliderSelector);
-                const needDragSliderElement = await barCodePage.$(sliderSelector);
-                if (needDragSliderElement && (await needDragSliderElement.isVisible())) {
-                    let ispass = false;
-                    while (!ispass) {
-                        // const browser: Browser = await firefox.launch({
-                        //     headless: false,
-                        //     // args: ['--disable-features=site-per-process'],
-                        // });
-                        // const context = await browser.newContext();
-                        // const fireFoxPage = await context.newPage();
-                        // await fireFoxPage.goto(link);
-
-                        const sliderBoxSelectoe = '#nc_1__scale_text';
-                        const boxElement = await barCodePage.waitForSelector(sliderBoxSelectoe);
-                        const sliderBoundingBox = await boxElement.boundingBox();
-                        const sliderX = sliderBoundingBox.x + sliderBoundingBox.width / 2;
-                        const sliderHandle = await barCodePage.locator(sliderSelector).first();
-                        // needDragSliderElement.
-                        await needDragSliderElement.hover();
-                        await needDragSliderElement.dispatchEvent('mousedown', { button: 'left' });
-                        await Sleep(1000);
-                        await needDragSliderElement.dispatchEvent('mousemove', { button: 'left' });
-                        await sliderHandle.dragTo(sliderHandle, { force: true, targetPosition: { x: sliderX, y: 0 } });
-                        await Sleep(3000);
-                        await needDragSliderElement.dispatchEvent('mouseup', { button: 'left' });
-
-                        const cookies = await barCodePage.context().cookies();
-
-                        const documentsPath = app ? app.getPath('documents') : './';
-                        const cookiePath = path.join(documentsPath, exportPath.cookies);
-                        if (!fs.existsSync(cookiePath)) fs.mkdirSync(cookiePath);
-                        fs.writeFileSync(`${cookiePath}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
-
-                        if (barCodePage && (await barCodePage.isVisible('#nc_1_refresh1'))) {
-                            const refreshElement = await barCodePage.$('#nc_1_refresh1');
-                            if (refreshElement && (await refreshElement.isVisible())) {
-                                await refreshElement?.click();
-                                return;
-                            }
-                        } else {
-                            ispass = true;
-                            // const aliasCookies = JSON.parse(
-                            //     fs.readFileSync(`${exportPath.cookies}/aliasCookies.json`, 'utf8'),
-                            // );
-                            // await context.addCookies(aliasCookies);
-                            // await browser.close();
-                            throw 'failer get barcode';
+                // Wait for possible slider to appear (max 10s)
+                let sliderAppeared = false;
+                let sliderHandle = null;
+                let sliderBox = null;
+                for (let attempt = 0; attempt < 10; attempt++) {
+                    sliderHandle = await barCodePage.$(sliderSelector);
+                    if (sliderHandle && await sliderHandle.isVisible()) {
+                        sliderBox = await barCodePage.$(sliderBoxSelector);
+                        if (sliderBox && await sliderBox.isVisible()) {
+                            sliderAppeared = true;
+                            break;
                         }
                     }
+                    await Sleep(1000);
                 }
-                // await barCodePage.waitForLoadState('networkidle');
 
-                // Robustly locate 货号 value using multiple selectors and XPath as fallback
+                if (sliderAppeared && sliderHandle && sliderBox) {
+                    // Try up to 3 times to pass the slider
+                    let sliderPassed = false;
+                    for (let tryCount = 0; tryCount < 3 && !sliderPassed; tryCount++) {
+                        try {
+                            // Get bounding box for slider bar and handle
+                            const box = await sliderBox.boundingBox();
+                            const handleBox = await sliderHandle.boundingBox();
+                            if (!box || !handleBox) throw new Error('Slider bounding box not found');
+
+                            // Calculate drag target: move handle from its center to the far right of the bar
+                            const startX = handleBox.x + handleBox.width / 2;
+                            const startY = handleBox.y + handleBox.height / 2;
+                            const endX = box.x + box.width - handleBox.width / 2 - 2; // -2 for safety
+                            const endY = startY;
+
+                            // Use Playwright mouse API for more reliable drag
+                            const page = barCodePage;
+                            await page.mouse.move(startX, startY);
+                            await page.mouse.down();
+                            await Sleep(300);
+                            await page.mouse.move(endX, endY, { steps: 25 });
+                            await Sleep(500);
+                            await page.mouse.up();
+
+                            // Wait for slider to disappear (max 5s)
+                            let sliderGone = false;
+                            for (let wait = 0; wait < 10; wait++) {
+                                const stillThere = await page.$(sliderSelector);
+                                if (!stillThere || !(await stillThere.isVisible())) {
+                                    sliderGone = true;
+                                    break;
+                                }
+                                await Sleep(500);
+                            }
+                            if (sliderGone) {
+                                sliderPassed = true;
+                                break;
+                            } else {
+                                // If there's a refresh button, click it and retry
+                                const refreshBtn = await page.$('#nc_1_refresh1');
+                                if (refreshBtn && await refreshBtn.isVisible()) {
+                                    await refreshBtn.click();
+                                    await Sleep(2000);
+                                }
+                            }
+                        } catch (err) {
+                            // If drag fails, try refresh and retry
+                            const refreshBtn = await barCodePage.$('#nc_1_refresh1');
+                            if (refreshBtn && await refreshBtn.isVisible()) {
+                                await refreshBtn.click();
+                                await Sleep(2000);
+                            }
+                        }
+                    }
+                    // If still not passed, throw error
+                    if (!sliderPassed) {
+                        throw new Error('Failed to pass slider verification after multiple attempts');
+                    }
+                }
+
+                // Now, try to extract the barcode as before
                 const aliaSelectors = [
                     spanSelector,
                     'tr.ant-descriptions-row th.ant-descriptions-item-label:has-text("货号") + td.ant-descriptions-item-content .field-value',
@@ -273,7 +300,8 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 // fs.writeFileSync(`${exportPath.cookies}/aliasCookies.json`, JSON.stringify(cookies, null, 2));
                 await barCodePage.close();
                 break;
-            case targetUrl.socwung:
+            }
+            case targetUrl.socwung: {
                 await Sleep(3000);
                 await editPage.waitForSelector('[data-name="barcode"]');
                 const barcodeElement = await barCodePage.waitForSelector('text=货号:');
@@ -284,6 +312,7 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 }
                 await barCodePage.close();
                 break;
+            }
             default:
                 break;
         }
@@ -291,7 +320,6 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
         console.log(`set barcode error: ${error}`);
         const pages = await context.pages();
         await pages[pages.length - 1].close();
-
         throw error;
     }
 }

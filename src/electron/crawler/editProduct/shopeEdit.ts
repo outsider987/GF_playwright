@@ -167,7 +167,36 @@ export async function startShopeEditPage(
                 //     console.log('code no change, close edit page');
                 //     editPage.close();
                 // }
+                
+                // Final trigger to ensure CKEditor content is committed before save
+                try {
+                    const iframe = await editPage.$('iframe.cke_wysiwyg_frame.cke_reset');
+                    if (iframe) {
+                        const frame = await iframe.contentFrame();
+                        if (frame) {
+                            // Wait for iframe to be ready
+                            await frame.waitForLoadState('domcontentloaded', { timeout: 3000 });
+                            
+                            // Trigger a final sync by clicking in the iframe and triggering events
+                            await frame.click('body');
+                            await frame.evaluate(() => {
+                                // Trigger multiple events to ensure CKEditor syncs
+                                const events = ['blur', 'change', 'input'];
+                                events.forEach(eventType => {
+                                    const event = new Event(eventType, { bubbles: true });
+                                    document.body.dispatchEvent(event);
+                                });
+                            });
+                            await Sleep(500);
+                        }
+                    }
+                } catch (e) {
+                    console.log('[shopeEdit] Final CKEditor trigger failed:', e);
+                    // Continue with save even if trigger fails
+                }
+                
                 const saveElement = await editPage.$('button.ant-btn.btn-orange:has-text("保存")');
+                await Sleep(2000);
                 await saveElement?.click();
                 await Sleep(1000);
                 if (await editPage.$('span:text("产品信息中有错误，请检查")')) {

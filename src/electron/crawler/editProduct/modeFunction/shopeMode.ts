@@ -198,20 +198,99 @@ export const startShopeMode = async (editPage: Page, context: BrowserContext, re
                 if (iframe) {
                     const frame = await iframe.contentFrame();
                     if (frame) {
-                        const body = await frame.$('body');
-                        if (body) {
-                            const existingContent = await body.innerHTML();
-                            const newContent = `${content.replace(/\n/g, '<br/>')}${existingContent}<br/>`;
-                            await frame.evaluate((content) => {
-                                document.body.innerHTML = content;
-                            }, newContent);
+                        try {
+                            // Wait for iframe to be ready and get existing content
+                            await frame.waitForLoadState('domcontentloaded', { timeout: 5000 });
+                            const body = await frame.$('body');
+                            if (!body) {
+                                console.log('[shopeMode] Body element not found in iframe');
+                                continue;
+                            }
+                            
+                            // Safely get existing content with error handling
+                            let existingContent = '';
+                            try {
+                                existingContent = await body.innerHTML();
+                            } catch (e) {
+                                console.log('[shopeMode] Failed to get existing content, using empty string');
+                                existingContent = '';
+                            }
+                            
+                            // Try to find the source button in the main page (not in iframe)
+                            const sourceButton = await editPage.$('.cke_button__source');
+                            if (sourceButton) {
+                                console.log('[shopeMode] Found source button, switching to source mode');
+                                
+                                // Click the "源码" (Source) button in CKEditor toolbar
+                                await sourceButton.click();
+                                await Sleep(500); // Wait for mode switch
+                                
+                                // Wait for the source editing area to appear
+                                const sourceArea = await editPage.waitForSelector('.cke_source', { 
+                                    state: 'visible', 
+                                    timeout: 3000 
+                                });
+                                
+                                if (sourceArea) {
+                                    // Prepare new content
+                                    const newContent = `${content.replace(/\n/g, '<br/>')}${existingContent}<br/>`;
+                                    
+                                    // Clear and fill the source area
+                                    await sourceArea.click();
+                                    await sourceArea.fill('');
+                                    await Sleep(200);
+                                    await sourceArea.fill(newContent);
+                                    await Sleep(500);
+                                    
+                                    // Click the "源码" button again to exit source mode and sync content
+                                    await sourceButton.click();
+                                    await Sleep(1000); // Wait for WYSIWYG mode to sync
+                                    
+                                    // Verify content was synced by checking iframe content (with error handling)
+                                    try {
+                                        // Re-get the iframe and body after mode switch
+                                        const newFrame = await iframe.contentFrame();
+                                        if (newFrame) {
+                                            const newBody = await newFrame.$('body');
+                                            if (newBody) {
+                                                const syncedContent = await newBody.innerHTML();
+                                                console.log('[shopeMode] Content synced, length:', syncedContent.length);
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.log('[shopeMode] Could not verify synced content:', e);
+                                    }
+                                }
+                            } else {
+                                console.log('[shopeMode] Source button not found, using direct iframe method');
+                                // Fallback: if source button not found, use the old method
+                                const newContent = `${content.replace(/\n/g, '<br/>')}${existingContent}<br/>`;
+                                
+                                try {
+                                    await frame.evaluate((content) => {
+                                        document.body.innerHTML = content;
+                                    }, newContent);
+                                    
+                                    // Trigger change event to ensure CKEditor knows content changed
+                                    await frame.evaluate(() => {
+                                        const event = new Event('input', { bubbles: true });
+                                        document.body.dispatchEvent(event);
+                                    });
+                                } catch (e) {
+                                    console.log('[shopeMode] Direct iframe method failed:', e);
+                                }
+                            }
+                        } catch (e) {
+                            console.log('[shopeMode] Iframe content handling failed:', e);
+                            // Continue to next iteration instead of breaking
+                            continue;
                         }
                     }
                 }
                 // await textareas.fill(content + '\n\n' + existingContent);
             }
         }
-
+        await Sleep(2000);
         return true;
     } catch (error) {
         console.log(`[startShopeMode] Error occurred (retry ${retryCount}/5):`, error);
