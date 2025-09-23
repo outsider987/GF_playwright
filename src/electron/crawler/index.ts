@@ -83,51 +83,169 @@ export async function run(args: {
             await page.goto('https://www.dianxiaomi.com/index.htm');
 
             console.log('start wait input name');
-            const accountSelector = '#exampleInputName';
-            const passSelector = '#exampleInputPassword';
-            const validateImg = '#loginImgVcode';
-            const validateSelector = '#loginVerifyCode';
+           
+            const validateImg = '#verifyImgCode';
+            const validateSelector = '#verifyCode';
             const loginBtn = '#loginBtn';
 
-            await page.waitForSelector(accountSelector);
-            await page.waitForSelector(passSelector);
+            // Wait for all form elements to be available
+            await page.waitForSelector(validateSelector);
             await page.waitForSelector(validateImg);
             await page.waitForSelector(loginBtn);
             await page.waitForSelector(validateSelector);
 
             // Find the input field by selector
-            console.log('start find input name');
-            const inputField = await page.$(accountSelector);
-            const passField = await page.$(passSelector);
-            const validateImgField = await page.$(validateImg);
-            const loginBtnField = await page.$(loginBtn);
-            const validateField = await page.$(validateSelector);
-
+                     
             // Wait for user to complete login manually
             console.log('Waiting for user to complete login...');
             console.log('Please enter your credentials and complete the login process');
 
-            // Wait for navigation after login (indicating successful login)
-            await page.waitForNavigation({
-                timeout: 0, // No timeout - wait indefinitely for user to login
-                waitUntil: 'networkidle',
-            });
+            // Function to detect login success with comprehensive debugging
+            const detectLoginSuccess = async (): Promise<boolean> => {
+                try {
+                    const currentUrl = page.url();
+                    console.log('🔍 Checking login status...');
+                    console.log('📍 Current URL:', currentUrl);
+                    
+                    // Get page title for additional context
+                    const pageTitle = await page.title();
+                    console.log('📄 Page title:', pageTitle);
+                    
+                    // Check URL patterns that indicate successful login
+                    const urlIndicators = [
+                        'home.htm',
+                        'shopifyProduct',
+                        'shopeeProduct',
+                        'dashboard',
+                        'main'
+                    ];
+                    
+                    const hasLoginUrl = urlIndicators.some(indicator => {
+                        const found = currentUrl.includes(indicator);
+                        if (found) console.log(`✅ Found URL indicator: ${indicator}`);
+                        return found;
+                    });
+                    
+                    // Check for elements that only appear when logged in
+                    const loggedInSelectors = [
+                        '.user-info',
+                        '.user-profile',
+                        '.logout',
+                        '.user-menu',
+                        '[class*="user"]',
+                        '[class*="profile"]',
+                        '.avatar',
+                        '.user-avatar',
+                        '#userInfo',
+                        '.login-success',
+                        '.header-user',
+                        '.user-dropdown',
+                        '.account-info',
+                        '.profile-menu'
+                    ];
+                    
+                    let hasLoggedInElement = false;
+                    console.log('🔍 Checking for logged-in elements...');
+                    for (const selector of loggedInSelectors) {
+                        try {
+                            const element = await page.$(selector);
+                            if (element) {
+                                console.log(`✅ Found logged-in element: ${selector}`);
+                                hasLoggedInElement = true;
+                                break;
+                            }
+                        } catch (e) {
+                            // Continue checking other selectors
+                        }
+                    }
+                    
+                    // Check if we're still on login page (this should be FALSE for success)
+                    const stillOnLoginPage = currentUrl.includes('index.htm') || 
+                                           currentUrl.includes('login') || 
+                                           currentUrl.includes('signin');
+                    
+                    console.log('🔍 URL analysis:');
+                    console.log(`  - Has login URL: ${hasLoginUrl}`);
+                    console.log(`  - Has logged-in element: ${hasLoggedInElement}`);
+                    console.log(`  - Still on login page: ${stillOnLoginPage}`);
+                    
+                    // Additional check: look for any text that indicates login success
+                    let hasSuccessText = false;
+                    try {
+                        const bodyText = await page.textContent('body');
+                        const successIndicators = [
+                            '欢迎',
+                            'welcome',
+                            'dashboard',
+                            '控制台',
+                            'console',
+                            '管理',
+                            'manage',
+                            '退出',
+                            'logout',
+                            '个人中心',
+                            'profile'
+                        ];
+                        
+                        hasSuccessText = successIndicators.some(indicator => 
+                            bodyText && bodyText.toLowerCase().includes(indicator.toLowerCase())
+                        );
+                        
+                        if (hasSuccessText) {
+                            console.log('✅ Found success text in page content');
+                        }
+                    } catch (e) {
+                        console.log('Error checking page content:', e);
+                    }
+                    
+                    // STRICT LOGIN DETECTION - require at least one positive indicator AND not on login page
+                    const isLoggedIn = !stillOnLoginPage && (hasLoginUrl || hasLoggedInElement || hasSuccessText);
+                    
+                    if (isLoggedIn) {
+                        console.log('🎉 LOGIN SUCCESS DETECTED!');
+                        return true;
+                    }
+                    
+                    console.log('❌ No login indicators found or still on login page');
+                    return false;
+                } catch (error) {
+                    console.log('❌ Error checking login status:', error);
+                    return false;
+                }
+            };
 
-            // Wait a bit more to ensure login is fully processed
-            await page.waitForTimeout(2000);
-
-            // Verify we're logged in by checking if we're redirected to a logged-in page
-            const currentUrl = page.url();
-            if (currentUrl.includes('index.htm') || currentUrl.includes('login')) {
-                throw new Error('Login failed or incomplete. Please check your credentials.');
+            // Wait for login with timeout detection
+            const maxWaitTime = 300000; // 5 minutes
+            const checkInterval = 2000; // Check every 2 seconds
+            const startTime = Date.now();
+            
+            let loginSuccessful = false;
+            
+            console.log('Starting login detection loop...');
+            while (Date.now() - startTime < maxWaitTime) {
+                loginSuccessful = await detectLoginSuccess();
+                if (loginSuccessful) {
+                    break;
+                }
+                
+                const elapsed = Math.round((Date.now() - startTime) / 1000);
+                console.log(`⏳ Login not yet successful, waiting... (${elapsed}s elapsed)`);
+                await page.waitForTimeout(checkInterval);
+            }
+            
+            if (!loginSuccessful) {
+                throw new Error('❌ Login timeout after 5 minutes - please check your credentials and try again.');
             }
 
             console.log('Login successful, saving cookies...');
             const cookies = await page.context().cookies();
+            console.log('Retrieved cookies count:', cookies.length);
+            
             if (!fs.existsSync(`${cookiePath}`)) {
-                fs.mkdirSync(`${cookiePath}`);
+                fs.mkdirSync(`${cookiePath}`, { recursive: true });
             }
             fs.writeFileSync(`${cookiePath}/cookies.json`, JSON.stringify(cookies, null, 2));
+            console.log('Cookies saved successfully to:', `${cookiePath}/cookies.json`);
 
             // Navigate to the appropriate page after successful login
             const targetUrl = isShope

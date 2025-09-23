@@ -25,10 +25,10 @@ export const globalState = {
     count: 1,
     debug: false,
     saveMode: true,
-    mode: mode.shope,
+    mode: mode.downloadImagePackage,
     isRunning: false,
-    target: '',
-    subTarget: '',
+    target: 'LD家',
+    subTarget: '20250922',
 };
 
 export const routineState = {
