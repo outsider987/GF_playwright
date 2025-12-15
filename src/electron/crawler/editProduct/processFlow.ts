@@ -149,6 +149,100 @@ export async function setConstant(editPage: Page, config: configType) {
 // 5. If slider is not present, proceed as normal.
 // 6. After passing the slider, continue to extract the barcode as before.
 
+/**
+ * Waits for user to complete Alibaba login if the login modal is detected.
+ * Detects the login bar with "Log in to view more benefits" or "一键登录" button.
+ * Note: Uses text-based detection because od-text elements use Shadow DOM.
+ */
+async function waitForAlibabaLogin(barCodePage: Page): Promise<void> {
+    // Wait a bit for page to fully render
+    await Sleep(2000);
+
+    // Check for login modal using multiple detection methods
+    const detectLoginModal = async (): Promise<boolean> => {
+        try {
+            // Method 1: Check for the login bar container class
+            const loginBar = await barCodePage.$('.module-login-bar');
+            if (loginBar && await loginBar.isVisible()) {
+                console.log('Detected login bar via .module-login-bar class');
+                return true;
+            }
+
+            // Method 2: Check for the login button with specific classes
+            const loginButton = await barCodePage.$('button.ant-btn.login-button');
+            if (loginButton && await loginButton.isVisible()) {
+                console.log('Detected login button via button.ant-btn.login-button');
+                return true;
+            }
+
+            // Method 3: Check for text content that indicates login prompt
+            const loginTexts = [
+                '一键登录',
+                '登录查看更多福利',
+                'One-click login',
+                'Log in to view more benefits',
+            ];
+
+            for (const text of loginTexts) {
+                const element = await barCodePage.$(`text="${text}"`);
+                if (element && await element.isVisible()) {
+                    console.log(`Detected login prompt via text: "${text}"`);
+                    return true;
+                }
+            }
+
+            // Method 4: Check page content for login indicators
+            const pageContent = await barCodePage.content();
+            if (pageContent.includes('module-login-bar') || 
+                pageContent.includes('loginBarBtn') ||
+                pageContent.includes('一键登录')) {
+                console.log('Detected login modal in page content');
+                return true;
+            }
+
+            return false;
+        } catch (e) {
+            console.log('Error detecting login modal:', e);
+            return false;
+        }
+    };
+
+    // Initial detection
+    const loginModalDetected = await detectLoginModal();
+
+    if (!loginModalDetected) {
+        console.log('No Alibaba login modal detected, proceeding...');
+        return;
+    }
+
+    console.log('⏳ Alibaba login modal detected! Please complete the login in the browser window...');
+
+    // Wait for user to complete login (max 5 minutes)
+    const maxWaitTime = 300000; // 5 minutes
+    const checkInterval = 2000; // Check every 2 seconds
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < maxWaitTime) {
+        // Check if login modal has disappeared
+        const loginModalStillPresent = await detectLoginModal();
+
+        if (!loginModalStillPresent) {
+            console.log('✅ Alibaba login completed successfully!');
+            // Wait a bit for page to fully load after login
+            await Sleep(2000);
+            return;
+        }
+
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        if (elapsed % 10 === 0) {
+            console.log(`⏳ Still waiting for Alibaba login... (${elapsed}s elapsed)`);
+        }
+        await Sleep(checkInterval);
+    }
+
+    throw new Error('❌ Alibaba login timeout after 5 minutes - please complete login faster next time.');
+}
+
 export async function setBarcode(editPage: Page, context: BrowserContext) {
     // Try to find the input[name="sourceUrl"] in the new UI
     let sourceUrlInput = await editPage.$('input[name="sourceUrl"]');
@@ -167,6 +261,9 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
     // Click the link and wait for the new tab to be fully loaded
     const [barCodePage] = await Promise.all([context.waitForEvent('page'), linkElement.click()]);
     await barCodePage.waitForLoadState('domcontentloaded');
+
+    // Wait for Alibaba login if the login modal is detected
+    await waitForAlibabaLogin(barCodePage);
 
     try {
         const barcodeInputElementS = await editPage.locator('input[name="barcode"]:visible');
@@ -204,52 +301,124 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                 }
 
                 if (sliderAppeared && sliderHandle && sliderBox) {
-                    // Try up to 3 times to pass the slider
+                    // Try up to 5 times to pass the slider
                     let sliderPassed = false;
-                    for (let tryCount = 0; tryCount < 3 && !sliderPassed; tryCount++) {
+                    for (let tryCount = 0; tryCount < 5 && !sliderPassed; tryCount++) {
+                        console.log(`Slider attempt ${tryCount + 1}/5`);
                         try {
+                            // Wait for page stability
+                            await Sleep(1000 + Math.random() * 500);
+                            
                             // Get bounding box for slider bar and handle
                             const box = await sliderBox.boundingBox();
                             const handleBox = await sliderHandle.boundingBox();
                             if (!box || !handleBox) throw new Error('Slider bounding box not found');
 
-                            // Calculate drag target: move handle from its center to the far right of the bar
+                            // Calculate positions
+                            // We need to move the CENTER of the handle to the end position
                             const startX = handleBox.x + handleBox.width / 2;
                             const startY = handleBox.y + handleBox.height / 2;
-                            const endX = box.x + box.width - handleBox.width / 2 - 2; // -2 for safety
-                            const endY = startY;
-
-                            // Use Playwright mouse API for more reliable drag
+                            
+                            // Target X is the absolute X coordinate where the handle center should end up.
+                            // This corresponds to: TrackStart + TrackWidth - HandleWidth/2
+                            // Or simply: startX + (TrackWidth - HandleWidth)
+                            const endX = startX + box.width - handleBox.width;
+                            
+                            console.log(`Slider geometry: StartX=${startX}, EndX=${endX}, Distance=${endX - startX}`);
+                            
                             const page = barCodePage;
-                            await page.mouse.move(startX, startY);
+                            
+                            // Human-like drag simulation
+                            // 1. Move to start position with slight randomness
+                            await page.mouse.move(
+                                startX + (Math.random() - 0.5) * 5,
+                                startY + (Math.random() - 0.5) * 5
+                            );
+                            await Sleep(100 + Math.random() * 100);
+                            
+                            // 2. Press mouse button
                             await page.mouse.down();
-                            await Sleep(300);
-                            await page.mouse.move(endX, endY, { steps: 25 });
-                            await Sleep(500);
+                            await Sleep(50 + Math.random() * 100);
+                            
+                            // 3. Drag with human-like curve (ease-in-out with Y wobble)
+                            const steps = 30 + Math.floor(Math.random() * 20); // Variable steps
+                            let currentX = startX;
+                            let currentY = startY;
+                            
+                            for (let i = 1; i <= steps; i++) {
+                                // Ease-in-out function: slow start, fast middle, slow end
+                                const t = i / steps;
+                                const eased = t < 0.5
+                                    ? 2 * t * t
+                                    : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                                
+                                // Calculate target position
+                                const targetX = startX + (endX - startX) * eased;
+                                // Add slight Y wobble (humans don't drag perfectly straight)
+                                const wobble = Math.sin(t * Math.PI * 2) * (2 + Math.random() * 2);
+                                const targetY = startY + wobble;
+                                
+                                // Move with small random variation
+                                currentX = targetX + (Math.random() - 0.5) * 1;
+                                currentY = targetY + (Math.random() - 0.5) * 1;
+                                
+                                await page.mouse.move(currentX, currentY);
+                                
+                                // Variable delay: slower at start and end
+                                const baseDelay = t < 0.2 || t > 0.8 ? 20 : 5;
+                                await Sleep(baseDelay + Math.random() * 15);
+                            }
+                            
+                            // 4. Final position and slight overshoot correction (past the end)
+                            // Go slightly past the end to ensure we hit the 100% mark
+                            await page.mouse.move(endX + 5, startY);
+                            await Sleep(100);
+                            // Settle back to the end
+                            await page.mouse.move(endX, startY);
+                            await Sleep(100 + Math.random() * 100);
+                            
+                            // 5. Release mouse
                             await page.mouse.up();
+                            console.log('Slider drag completed, waiting for result...');
 
-                            // Wait for slider to disappear (max 5s)
+                            // Wait for slider to disappear or success indicator (max 8s)
                             let sliderGone = false;
-                            for (let wait = 0; wait < 10; wait++) {
+                            for (let wait = 0; wait < 16; wait++) {
+                                // Check if slider disappeared
                                 const stillThere = await page.$(sliderSelector);
                                 if (!stillThere || !(await stillThere.isVisible())) {
                                     sliderGone = true;
+                                    console.log('✅ Slider verification passed!');
+                                    break;
+                                }
+                                // Check for success message
+                                const successText = await page.$('.nc-lang-cnt:has-text("Verification success")');
+                                if (successText) {
+                                    sliderGone = true;
+                                    console.log('✅ Slider verification success detected!');
                                     break;
                                 }
                                 await Sleep(500);
                             }
+                            
                             if (sliderGone) {
                                 sliderPassed = true;
+                                await Sleep(1000); // Wait for page to update
                                 break;
                             } else {
+                                console.log('❌ Slider verification failed, looking for refresh...');
                                 // If there's a refresh button, click it and retry
                                 const refreshBtn = await page.$('#nc_1_refresh1');
                                 if (refreshBtn && await refreshBtn.isVisible()) {
                                     await refreshBtn.click();
                                     await Sleep(2000);
+                                } else {
+                                    // Maybe need to wait for page reload
+                                    await Sleep(2000);
                                 }
                             }
                         } catch (err) {
+                            console.log(`Slider error: ${err}`);
                             // If drag fails, try refresh and retry
                             const refreshBtn = await barCodePage.$('#nc_1_refresh1');
                             if (refreshBtn && await refreshBtn.isVisible()) {
@@ -258,9 +427,24 @@ export async function setBarcode(editPage: Page, context: BrowserContext) {
                             }
                         }
                     }
-                    // If still not passed, throw error
+                    // If still not passed, wait for user to manually complete it
                     if (!sliderPassed) {
-                        throw new Error('Failed to pass slider verification after multiple attempts');
+                        console.log('⏳ Slider automation failed. Please complete the slider manually...');
+                        // Wait for user to complete slider (max 2 minutes)
+                        const maxWait = 120000;
+                        const start = Date.now();
+                        while (Date.now() - start < maxWait) {
+                            const slider = await barCodePage.$(sliderSelector);
+                            if (!slider || !(await slider.isVisible())) {
+                                console.log('✅ Slider passed (manually)!');
+                                sliderPassed = true;
+                                break;
+                            }
+                            await Sleep(2000);
+                        }
+                        if (!sliderPassed) {
+                            throw new Error('Failed to pass slider verification - timeout');
+                        }
                     }
                 }
 

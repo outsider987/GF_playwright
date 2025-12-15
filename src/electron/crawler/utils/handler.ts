@@ -73,6 +73,111 @@ export const handleCloseModal = async (page: Page) => {
     }
 };
 
+/**
+ * Closes bullet-layer/comm-modal type modals that block pointer events.
+ * These are Ant Design modals that appear as overlays.
+ */
+export const closeBulletLayerModal = async (page: Page, maxAttempts = 3): Promise<boolean> => {
+    const modalSelectors = [
+        '.ant-modal-wrap.bullet-layer',
+        '.ant-modal-wrap.comm-modal',
+        '.ant-modal-wrap[role="dialog"]',
+    ];
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        let modalFound = false;
+
+        for (const selector of modalSelectors) {
+            const modal = await page.$(selector);
+            if (modal && await modal.isVisible()) {
+                modalFound = true;
+                console.log(`Found modal: ${selector}, attempting to close (attempt ${attempt + 1})...`);
+
+                // Try multiple methods to close the modal
+                // Method 1: Click the close button (X icon)
+                const closeButtons = [
+                    `${selector} .ant-modal-close`,
+                    `${selector} button.ant-modal-close`,
+                    `${selector} .ant-modal-close-x`,
+                    `${selector} .anticon-close`,
+                ];
+
+                let closed = false;
+                for (const btnSelector of closeButtons) {
+                    const closeBtn = await page.$(btnSelector);
+                    if (closeBtn && await closeBtn.isVisible()) {
+                        try {
+                            await closeBtn.click({ force: true });
+                            await Sleep(500);
+                            closed = true;
+                            console.log(`Closed modal using: ${btnSelector}`);
+                            break;
+                        } catch (e) {
+                            // Try next method
+                        }
+                    }
+                }
+
+                // Method 2: Try clicking cancel/close buttons in modal footer
+                if (!closed) {
+                    const footerButtons = [
+                        `${selector} .ant-modal-footer button:has-text("取消")`,
+                        `${selector} .ant-modal-footer button:has-text("关闭")`,
+                        `${selector} .ant-modal-footer button:has-text("Cancel")`,
+                        `${selector} .ant-modal-footer button:has-text("Close")`,
+                    ];
+
+                    for (const btnSelector of footerButtons) {
+                        const btn = await page.$(btnSelector);
+                        if (btn && await btn.isVisible()) {
+                            try {
+                                await btn.click({ force: true });
+                                await Sleep(500);
+                                closed = true;
+                                console.log(`Closed modal using footer button: ${btnSelector}`);
+                                break;
+                            } catch (e) {
+                                // Try next method
+                            }
+                        }
+                    }
+                }
+
+                // Method 3: Press Escape key
+                if (!closed) {
+                    try {
+                        await page.keyboard.press('Escape');
+                        await Sleep(500);
+                        console.log('Attempted to close modal with Escape key');
+                    } catch (e) {
+                        // Continue
+                    }
+                }
+
+                break; // Found a modal, process next attempt
+            }
+        }
+
+        if (!modalFound) {
+            console.log('No bullet-layer modal detected.');
+            return true;
+        }
+
+        await Sleep(500); // Wait before next check
+    }
+
+    // Final check if modal is still present
+    for (const selector of modalSelectors) {
+        const modal = await page.$(selector);
+        if (modal && await modal.isVisible()) {
+            console.log('Warning: Modal still present after close attempts');
+            return false;
+        }
+    }
+
+    return true;
+};
+
 export const handleError = async (
     fun: any,
     param: {

@@ -1,5 +1,5 @@
 import { BrowserContext, Page } from 'playwright';
-import { handleCloseModal, handleGoToPage } from '../utils/handler';
+import { handleCloseModal, handleGoToPage, closeBulletLayerModal } from '../utils/handler';
 import {
     globalState as Config,
     defaultCode,
@@ -52,6 +52,9 @@ export async function startEditPage(
             await newEdit.click();
 
             const editPage = await context.waitForEvent('page');
+
+            // Close any bullet-layer modals that may be blocking interactions
+            await closeBulletLayerModal(editPage);
 
             let SKU = '';
 
@@ -148,8 +151,13 @@ export async function startEditPage(
     } catch (error) {
         console.log(`failed on \n count ${config.globalState.mode} \n edit ${currentEditIndex} \n error: ${error} `);
 
-        const editPage = await context.pages()[1];
-        await editPage.close();
+        const pages = context.pages();
+        if (pages.length > 1) {
+            const editPage = pages[1];
+            if (editPage && !editPage.isClosed()) {
+                await editPage.close();
+            }
+        }
         await startEditPage(page, context, config);
     }
 }
